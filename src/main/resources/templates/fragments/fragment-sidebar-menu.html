@@ -1,0 +1,27 @@
+<div id="sidebar-menu" class="main_menu_side hidden-print main_menu" data-th-fragment="sidebar-menu"
+     xmlns:th="http://www.w3.org/1999/xhtml">
+    <div class="menu_section">
+        <h3>General</h3>
+        <ul class="nav side-menu">
+            <li><a><i class="fa fa-home"></i>Home <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a href="#index.html">Users</a></li>
+                    <li><a href="#index2.html">Mobile Users</a></li>
+                </ul>
+            </li>
+            <li><a><i class="fa fa-edit"></i> Reports <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a th:href="@{/common/commission}">Commission Reports</a></li>
+                    <li><a href="#form_advanced.html">Draw Details</a></li>
+                    <li><a href="#form_validation.html">Retailer Tickets</a></li>
+                </ul>
+            </li>
+            <li><a><i class="fa fa-desktop"></i> Fair Play Management <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a href="#general_elements.html">General Elements</a></li>
+                    <li><a href="#media_gallery.html">Media Gallery</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
