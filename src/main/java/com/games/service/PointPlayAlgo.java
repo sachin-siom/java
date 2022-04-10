@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +33,7 @@ public class PointPlayAlgo {
         profitPercentage = 100.0 - profitPercentage;
         Double distributeMoney = collectionAmt * (profitPercentage / 100.0f);
         log.info("Distributing winning prize of worth: {} and profit will be: {}", distributeMoney, profit);
+        log.info("includeNumber:{}, ",includeNumbers);
         Map<String, List<PointDetails>> prepareAllRangeBetMap = new HashMap<>();
         List<String> NUMBERS = new ArrayList<>();
         for (int i = 0; i <= 9; i++) {
@@ -43,13 +45,18 @@ public class PointPlayAlgo {
                 prepareNumberByRange(low, high, betMap, prepareAllRangeBetMap, excludeNumber);
             }
         }
+        prepareAllRangeBetMap = prepareAllRangeBetMap.entrySet().stream().sorted(Entry.comparingByValue((o1, o2) -> o2.size() - o1.size())).
+                collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
         Collections.shuffle(NUMBERS);
         Map<String, List<PointDetails>> finalWinnerMap = new HashMap<>();
-        log.info("includeNumber:{}, ",includeNumbers);
-        for (String highLow : NUMBERS) {
+        log.info("prepareAllRangeBetMap:{}, ",prepareAllRangeBetMap);
+        for (Entry<String, List<PointDetails>> entry : prepareAllRangeBetMap.entrySet()) {
+            distributeMoney = distributePrizeRandomly(includeNumbers, betMap, distributeMoney, finalWinnerMap, entry.getKey(), prepareAllRangeBetMap);
+        }
+        /*for (String highLow : NUMBERS) {
             distributeMoney = distributePrizeRandomly(includeNumbers, betMap, distributeMoney, finalWinnerMap, highLow, prepareAllRangeBetMap);
 
-        }
+        }*/
         // add missed number but non-winner
         log.info("2.includeNumber:{}, betMap:{}, prepareAllRangeBetMap:{}, finalWinnerMap:{}",includeNumbers, betMap, prepareAllRangeBetMap, finalWinnerMap);
         for (String key : finalWinnerMap.keySet()) {
