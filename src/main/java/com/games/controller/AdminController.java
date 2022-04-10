@@ -171,17 +171,19 @@ public class AdminController {
 
     @PostMapping("/manageRetailer/updateBalance/{retailId}")
     public ResponseEntity<String> updateBalance(@PathVariable String retailId, @RequestBody @NotBlank @NotNull RetailerBalance balance) {
-        double bal = 0.0;
-        if(Objects.isNull(balance) || Objects.isNull(balance.getBalance())) {
-            try{
-                bal = Double.parseDouble(balance.getBalance());
-            }catch(Exception e){
-                log.error("parsing error in updating balance", e);
-                throw new ResourceNotFoundException("parsing error in updating balance",200);
-            }
+
+        if (Objects.isNull(balance) || Objects.isNull(balance.getBalance())) {
+            throw new ResourceNotFoundException("balance is zero or negative", 201);
         }
-        if(bal <= 0) {
-            throw new ResourceNotFoundException("balance is zero or negative",201);
+        double bal = 0.0;
+        try {
+            bal = Double.parseDouble(balance.getBalance());
+        } catch (Exception e) {
+            log.error("parsing error in updating balance", e);
+            throw new ResourceNotFoundException("parsing error in updating balance", 200);
+        }
+        if (bal <= 0) {
+            throw new ResourceNotFoundException("balance is zero or negative", 201);
         }
         Optional<Retailer> retailer = retailerRepository.findById(retailId);
         if (retailer.isPresent()) {
@@ -213,10 +215,4 @@ public class AdminController {
         return new ResponseEntity<>(new AuthenticationBean("You are authenticated"), HttpStatus.OK);
     }
 
-}
-
-@Data
-@AllArgsConstructor
-class AuthenticationBean {
-    private String name;
 }
