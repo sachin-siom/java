@@ -40,7 +40,7 @@ public class JobSchedular {
             log.info("Job Started At: {}", LocalDateTime.now());
             commissionService.getTodaysAllRetailersReport();
         } catch (Exception e) {
-            log.error("issue while running cron scheduleFixedDelayTaskAuditReport: {} ", drawTime, e);
+            log.error("issue while running cron scheduleFixedDelayTaskAuditReport: {} ", e);
         }
     }
 }
