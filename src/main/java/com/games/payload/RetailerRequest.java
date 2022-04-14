@@ -8,8 +8,11 @@ import javax.validation.constraints.NotNull;
 @Data
 public class RetailerRequest {
 
-    @NotNull@NotBlank
+    @NotNull @NotBlank
     private String username;
-    @NotNull@NotBlank
+    @NotNull @NotBlank
     private String password;
+
+    @NotNull @NotBlank
+    private String profitPercentage;
 }

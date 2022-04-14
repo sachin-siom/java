@@ -10,6 +10,7 @@ import com.games.payload.*;
 import com.games.repository.RetailerAuditRepository;
 import com.games.repository.RetailerRepository;
 import com.games.repository.UserServiceRepository;
+import com.games.service.AdminService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,9 @@ public class AdminController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private AdminService adminService;
 
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
@@ -104,13 +108,13 @@ public class AdminController {
     }
 
     @PostMapping("/addRetailer")
-    @Transactional
     public ResponseEntity addRetailer(@RequestBody @Valid RetailerRequest newRetailerRequest) {
-        User savedEntity = userServiceRepository.save(User.builder().username(newRetailerRequest.getUsername()).
-                password(bCryptPasswordEncoder.encode(newRetailerRequest.getPassword())).isEnabled(true).role(ROLE).build());
-        retailerRepository.save(Retailer.builder().retailId(String.valueOf(savedEntity.getId())).username(newRetailerRequest.getUsername())
-                .balance(0.0).build());
-        return new ResponseEntity(HttpStatus.OK);
+        try{
+            adminService.createUser(newRetailerRequest);
+            return new ResponseEntity(HttpStatus.OK);
+        }catch (Exception e){
+            throw new ResourceNotFoundException("user can not be created at server due to an error", 1002);
+        }
     }
 
     @PutMapping("/disable/{retailId}")
