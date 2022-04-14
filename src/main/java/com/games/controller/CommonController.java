@@ -1,7 +1,9 @@
 package com.games.controller;
 
 import com.games.exception.ResourceNotFoundException;
+import com.games.model.RetailerDailyReport;
 import com.games.payload.*;
+import com.games.service.CommissionService;
 import com.games.service.PointPlayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,9 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.TemporalAmount;
+import java.util.*;
+
+import static com.games.util.GameUtil.getDate;
 
 @CrossOrigin(origins = "http://localhost:4200/")
 @RestController
@@ -21,6 +26,9 @@ public class CommonController {
 
     @Autowired
     private PointPlayService pointPlayService;
+
+    @Autowired
+    private CommissionService commissionService;
 
     @GetMapping("/hello")
     public ResponseEntity<String> hello(){
@@ -79,13 +87,37 @@ public class CommonController {
         }
     }
 
-    @GetMapping(value = "/commission", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String drawDetails() {
+
+    @GetMapping(value = "/counterSale/{retailId}/{fdate}/{tdate}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity counterSale(@PathVariable("retailId")String retailsId, @PathVariable("fdate")String fdate, @PathVariable("tdate")String tdate ) {
         try {
-            return "commission";
+            if(Objects.isNull(retailsId) || Objects.isNull(fdate) || Objects.isNull(tdate)) {
+                throw  new ResourceNotFoundException(" retailsId or fdate or tdate is null", 10003);
+            }
+            List<RetailerDailyReport> response = new ArrayList<>();
+            LocalDate fromDate = getDate(fdate);
+            LocalDate toDate = getDate(tdate);
+            if(toDate.isEqual(LocalDate.now())){
+                response.add(commissionService.getTodaysReport(retailsId));
+                toDate = toDate.minusDays(1);
+            }
+            List<RetailerDailyReport> counterRetailersReport = commissionService.getCounterRetailersReport(retailsId, fromDate, toDate);
+            if (Objects.nonNull(counterRetailersReport)){
+                response.addAll(counterRetailersReport);
+            }
+            return new ResponseEntity(response, HttpStatus.OK);
         } catch (ResourceNotFoundException exc) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, exc.getMessage(), exc);
         }
     }
 
+    @GetMapping(value = "/runReport", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String runReport() {
+        try {
+            commissionService.getTodaysAllRetailersReport();
+            return "success";
+        } catch (ResourceNotFoundException exc) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, exc.getMessage(), exc);
+        }
+    }
 }

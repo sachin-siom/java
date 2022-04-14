@@ -28,10 +28,11 @@ import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.games.util.GameUtil.PORTAL_UPDATE;
 import static com.games.util.GameUtil.ROLE;
 
 @Slf4j
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200/")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -188,7 +189,7 @@ public class AdminController {
         Optional<Retailer> retailer = retailerRepository.findById(retailId);
         if (retailer.isPresent()) {
             log.info("retailer:{} updated balance:{}", retailer, balance);
-            RetailerAudit audit = RetailerAudit.builder().retailId(retailId).ticketId("PORTAL_UPDATE").
+            RetailerAudit audit = RetailerAudit.builder().retailId(retailId).ticketId(PORTAL_UPDATE).
                     isCredit(1).creditor(Creditaor.ADMIN.getVal()).amount(bal).balance(bal + retailer.get().getBalance()).build();
             retailerAuditRepository.save(audit);
             retailerRepository.updateBalance(Double.parseDouble(balance.getBalance()), retailId);

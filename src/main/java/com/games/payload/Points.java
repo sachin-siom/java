@@ -8,13 +8,13 @@ import java.util.Map;
 
 @Data
 public class Points {
-    @NotBlank
-    @NotNull
+
+    @NotNull(message = "points can not be null")
     private Map<Integer, Integer> points;
-    @NotBlank
-    @NotNull
+
+    @NotNull(message = "winningMultiplier can not be blank")
     private Integer winningMultiplier;
-    @NotBlank
-    @NotNull
+
+    @NotNull(message = "pricePerPoint can not be blank")
     private Integer pricePerPoint;
 }

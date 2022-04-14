@@ -1,8 +1,6 @@
 package com.games.util;
 
-import com.games.model.PointsDetails;
 import com.games.model.Sequence;
-import com.games.payload.PointWinnerResponse;
 import com.games.repository.SequenceRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,15 +8,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Objects;
 
 @Slf4j
 public class GameUtil {
 
     public static final String ROLE = "USER";
+    public static final String PORTAL_UPDATE = "PORTAL_UPDATE";
 
     public static String upcomingDrawTime() {
         StringBuilder drawTime = new StringBuilder();
@@ -110,12 +107,23 @@ public class GameUtil {
         return localDateTime.atTime(LocalTime.MAX);
     }
 
+    public static LocalDate getDate(String date) {
+        return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    }
+
+    public static String currentDate() {
+        return LocalDate.now().toString();
+    }
+
     public static void main(String[] args) {
         LocalTime lt = LocalTime.now();
         System.out.println(upcomingDrawTime());
         StringBuilder drawTime = new StringBuilder();
         drawTime.append(13).append("00");
         System.out.println(drawTime.toString());
+
+        System.out.println(LocalDateTime.now().toString());
+
         System.out.println(atStartOfDay("2022-03-07"));
         System.out.println(atEndOfDay("2022-03-07"));
     }

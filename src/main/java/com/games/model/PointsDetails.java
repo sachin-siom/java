@@ -16,6 +16,8 @@ import java.util.Date;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table( name = "points_details", indexes = {@Index(name = "drawTime_creationTime_index",columnList = "drawTime,creationTime"),
+        @Index(name = "retailid_creationTime_index",columnList = "retailId,creationTime")})
 public class PointsDetails {
     @Id
     private String ticketId;
