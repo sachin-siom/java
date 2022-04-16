@@ -21,7 +21,6 @@ import java.util.*;
 import static com.games.util.GameUtil.getDate;
 
 @Slf4j
-@CrossOrigin(origins = "http://localhost:4200/")
 @RestController
 @RequestMapping("/common")
 public class CommonController {

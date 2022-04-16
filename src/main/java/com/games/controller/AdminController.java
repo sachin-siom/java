@@ -33,7 +33,6 @@ import static com.games.util.GameUtil.PORTAL_UPDATE;
 import static com.games.util.GameUtil.ROLE;
 
 @Slf4j
-@CrossOrigin(origins = "http://localhost:4200/")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
