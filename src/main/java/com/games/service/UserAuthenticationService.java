@@ -1,6 +1,7 @@
 package com.games.service;
 
 
+import com.games.exception.ResourceNotFoundException;
 import com.games.repository.UserServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +24,7 @@ public class UserAuthenticationService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         com.games.model.User user = userRepository.findByUsernameAndEnabled(username, true);
         if (user == null) {
-            throw new UsernameNotFoundException("Username not found or disabled" + username);
+            throw new ResourceNotFoundException("Username not found or disabled: " + username, 45);
         }
         List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
         grantedAuthorities.add(new SimpleGrantedAuthority(user.getRole()));

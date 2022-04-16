@@ -75,7 +75,7 @@ public class AdminController {
     @GetMapping("/retailer/{retailId}")
     public ResponseEntity<Retailer> getRetailer(@PathVariable String retailId) {
         if(Objects.isNull(retailId) || StringUtils.isEmpty(retailId)){
-            throw new ResourceNotFoundException("retailid can not be empty", 103);
+            throw new ResourceNotFoundException("retailid can not be empty or null", 1);
         }
         try {
             Optional<Retailer> retailer = retailerRepository.findById(retailId);
@@ -84,7 +84,7 @@ public class AdminController {
             }
         } catch (Exception e) {
             log.error("there is issue while fetching retailer details: ", e);
-            throw new ResourceNotFoundException("retailer not found exception: {}", e);
+            throw new ResourceNotFoundException("retailid can not be empty or null or issue while fetching the details", 2);
         }
         return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
     }
@@ -108,12 +108,13 @@ public class AdminController {
     }
 
     @PostMapping("/addRetailer")
-    public ResponseEntity addRetailer(@RequestBody @Valid RetailerRequest newRetailerRequest) {
+    public ResponseEntity addRetailer(@RequestBody @Valid RetailerRequest request) {
         try{
-            adminService.createUser(newRetailerRequest);
+            adminService.createUser(request);
             return new ResponseEntity(HttpStatus.OK);
         }catch (Exception e){
-            throw new ResourceNotFoundException("user can not be created at server due to an error", 1002);
+            log.error("addRetailer: request :{}", request, e);
+            throw new ResourceNotFoundException("add retailer not be created at server due to an error either username not valid opr already taken", 3);
         }
     }
 
@@ -121,11 +122,11 @@ public class AdminController {
     public ResponseEntity disableRetailer(@PathVariable String retailId) {
         try{
             if(Objects.isNull(retailId) || Long.parseLong(retailId) == 1){
-                throw new ResourceNotFoundException("can not disable admin reatilId", 101);
+                throw new ResourceNotFoundException("can not disable admin reatilId", 4);
             }
             userServiceRepository.disableRetailer(false, Long.parseLong(retailId));
         }catch (Exception e){
-            log.error("diable request failed", e);
+            log.error("diable retailer request failed", e);
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
@@ -135,11 +136,11 @@ public class AdminController {
     public ResponseEntity enableRetailer(@PathVariable String retailId) {
         try{
             if(Objects.isNull(retailId) || Long.parseLong(retailId) == 1){
-                throw new ResourceNotFoundException("can not enable admin reatilId", 102);
+                throw new ResourceNotFoundException("can not enable admin reatilId", 5);
             }
             userServiceRepository.enabledRetailer(true, Long.parseLong(retailId));
         }catch (Exception e){
-            log.error("enabled request failed", e);
+            log.error("enabled retail request failed", e);
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
@@ -149,7 +150,7 @@ public class AdminController {
     public ResponseEntity includeNumber(@PathVariable String retailId, @RequestBody @NotBlank @NotNull List<Integer> includeNumbers) {
         try{
             if(Objects.isNull(retailId) || Long.parseLong(retailId) != 1){
-                throw new ResourceNotFoundException("can not enable admin reatilId", 102);
+                throw new ResourceNotFoundException("can not enable admin reatilId", 6);
             }
             log.info("includers :{}", includeNumbers);
             String includeNumber = objectMapper.writeValueAsString(new HashSet(includeNumbers));
@@ -166,40 +167,17 @@ public class AdminController {
     public ResponseEntity<String> changepassword(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String newPassowrd) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
-            log.info("pasword:{}", newPassowrd);
+            log.info("password:{}", newPassowrd);
             userServiceRepository.updateUserPassword(bCryptPasswordEncoder.encode(newPassowrd), Long.parseLong(retailId));
         } else {
-            throw new ResourceNotFoundException("Retailid not exists", 100);
+            throw new ResourceNotFoundException("Retailid not exists", 7);
         }
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @PostMapping("/manageRetailer/updateBalance/{retailId}")
     public ResponseEntity<String> updateBalance(@PathVariable String retailId, @RequestBody @NotBlank @NotNull RetailerBalance balance) {
-
-        if (Objects.isNull(balance) || Objects.isNull(balance.getBalance())) {
-            throw new ResourceNotFoundException("balance is zero or negative", 201);
-        }
-        double bal = 0.0;
-        try {
-            bal = Double.parseDouble(balance.getBalance());
-        } catch (Exception e) {
-            log.error("parsing error in updating balance", e);
-            throw new ResourceNotFoundException("parsing error in updating balance", 200);
-        }
-        if (bal <= 0) {
-            throw new ResourceNotFoundException("balance is zero or negative", 201);
-        }
-        Optional<Retailer> retailer = retailerRepository.findById(retailId);
-        if (retailer.isPresent()) {
-            log.info("retailer:{} updated balance:{}", retailer, balance);
-            RetailerAudit audit = RetailerAudit.builder().retailId(retailId).ticketId(PORTAL_UPDATE).
-                    isCredit(1).creditor(Creditaor.ADMIN.getVal()).amount(bal).balance(bal + retailer.get().getBalance()).build();
-            retailerAuditRepository.save(audit);
-            retailerRepository.updateBalance(Double.parseDouble(balance.getBalance()), retailId);
-        } else {
-            throw new ResourceNotFoundException("Retailid not exists", 100);
-        }
+        adminService.manageUser(retailId, balance);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -210,7 +188,7 @@ public class AdminController {
             retailerRepository.save(Retailer.builder().retailId(retailer.get().getRetailId()).username(retailer.get().getUsername())
                     .balance(retailer.get().getBalance()).profitPercentage(Double.parseDouble(profitPercentage)).build());
         } else {
-            throw new ResourceNotFoundException("Retailid not exists", 100);
+            throw new ResourceNotFoundException("Retailid not exists", 12);
         }
         return new ResponseEntity(HttpStatus.OK);
     }

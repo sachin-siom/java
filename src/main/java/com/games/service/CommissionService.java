@@ -34,13 +34,13 @@ public class CommissionService {
 
     public RetailerDailyReport getTodaysReport(String retailId){
         if(Objects.isNull(retailId)){
-            throw new ResourceNotFoundException("Retails id is null", 10001);
+            throw new ResourceNotFoundException("Retails id is null", 21);
         }
         Optional<Retailer> retailerOptional = retailerRepository.findById(retailId);
         if(retailerOptional.isPresent()){
             return prepareDayWiseReport(currentDate(), retailId, retailerOptional.get().getProfitPercentage());
         } else {
-            throw new ResourceNotFoundException("Retails id not found", 10002);
+            throw new ResourceNotFoundException("Retails id not found", 22);
         }
     }
 

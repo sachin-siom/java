@@ -47,8 +47,9 @@ public class RetailController {
         try {
             PointPlayResponse playResponse = pointPlayService.playBet(gamePlayRequest);
             return new ResponseEntity<>(playResponse, HttpStatus.CREATED);
-        } catch (ResourceNotFoundException exc) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, exc.getMessage(), exc);
+        } catch (Exception ex) {
+            log.error("problem in server playoing reqest gamePlayReq:{}", gamePlayRequest, ex);
+            throw new ResourceNotFoundException("problem in processing request",20);
         }
     }
 

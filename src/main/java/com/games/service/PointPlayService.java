@@ -56,12 +56,12 @@ public class PointPlayService {
     public PointPlayResponse playBet(PointPlayRequest gamePlayRequest) {
         if (Objects.nonNull(gamePlayRequest.getDrawTime()) && !validateDrawTime(gamePlayRequest.getDrawTime())) {
             log.error("draw time can not be in past");
-            throw new ResourceNotFoundException("draw time can not be in past", 1);
+            throw new ResourceNotFoundException("draw time can not be in past", 23);
         }
         Optional<Retailer> optionalRetailer = retailerRepository.findById(gamePlayRequest.getRetailId());
         if (!optionalRetailer.isPresent()) {
             log.error("Retail id not found or not exist");
-            throw new ResourceNotFoundException("Retail id not found or not exist", 2);
+            throw new ResourceNotFoundException("Retail id not found or not exist", 24);
         }
         Retailer retailer = optionalRetailer.get();
         Optional<Integer> OptionalPlayerWager = gamePlayRequest.getPointArrays().stream().map
@@ -69,7 +69,7 @@ public class PointPlayService {
         Integer wager = OptionalPlayerWager.get();
         if (isSufficientBalance(wager, retailer.getBalance())) {
             log.error("Retail id not having sufficient balance");
-            throw new ResourceNotFoundException("Retail id not having sufficient balance", 3);
+            throw new ResourceNotFoundException("Retail id not having sufficient balance", 25);
         }
         double remainingBal = subtract(retailer.getBalance(), wager);
         PointsDetails pointsDetails = null;
@@ -79,7 +79,7 @@ public class PointPlayService {
                     retailId(gamePlayRequest.getRetailId()).drawTime(getDrawTime(gamePlayRequest.getDrawTime())).
                     ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository)).build();
         } catch (JsonProcessingException e) {
-            throw new ResourceNotFoundException("point array in not in proper JSON format", 4);
+            throw new ResourceNotFoundException("point array in not in proper JSON format", 26);
         }
         RetailerAudit audit = RetailerAudit.builder().retailId(pointsDetails.getRetailId()).ticketId(pointsDetails.getTicketId()).
                 isCredit(0).creditor(Creditaor.USER.getVal()).amount(wager).balance(remainingBal).build();
@@ -99,20 +99,21 @@ public class PointPlayService {
         double collectionAmt = 0.0;
         final Retailer adminRetailer = retailerRepository.getById(ADMIN_RETAIL_ID);
         log.info("admin retailer: {}", adminRetailer);
-        if(Objects.isNull(adminRetailer)){
-            throw new ResourceNotFoundException("Admin user not found in DB ", 9);
+        if (Objects.isNull(adminRetailer)) {
+            throw new ResourceNotFoundException("Admin user not found in DB ", 27);
         }
         double profitPercentage = adminRetailer.getProfitPercentage();
         log.info("profit {}% applied & drawTime: {}", profitPercentage, drawTime);
         Map<Integer, Double> betMap = new HashMap<>();
         for (PointsDetails bet : allBets) {
-            ArrayList<Points> betPoints = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>(){});
+            ArrayList<Points> betPoints = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
             for (Points betPoint : betPoints) {
                 double winningAmt = MULTIPLIER * betPoint.getWinningMultiplier();
                 collectionAmt = collectionAmt + (betPoint.getPoints().values().stream().mapToInt(i -> i).sum() * betPoint.getPricePerPoint());
                 final List<Integer> betPointsList = getPoints(betPoint.getPoints());
                 for (Integer num : betPointsList) {
-                    if(betMap.containsKey(num)){
+                    if (betMap.containsKey(num)) {
                         betMap.put(num, winningAmt + betMap.get(num));
                     } else {
                         betMap.put(num, winningAmt);
@@ -128,29 +129,30 @@ public class PointPlayService {
                 }));
             }
             log.info("includeNumber: {}", includeNumber);
-        }catch(Exception e){
-            log.error("Problem while evaluating include numbers {}",adminRetailer.getIncludeNumbers(), e );
+        } catch (Exception e) {
+            log.error("Problem while evaluating include numbers {}", adminRetailer.getIncludeNumbers(), e);
         }
 
         SortedSet<Integer> excludeNumber = new TreeSet();
         Map<String, List<PointDetails>> winners = pointPlayAlgo.run(betMap, collectionAmt, profitPercentage, includeNumber, excludeNumber);
-        if(Objects.isNull(winners) || winners.isEmpty()){
+        if (Objects.isNull(winners) || winners.isEmpty()) {
             log.error("winner list is empty drawTime: {}", drawTime);
             return;
         }
-        log.info("drawTime :{} winners: {}",drawTime, winners);
+        log.info("drawTime :{} winners: {}", drawTime, winners);
         //Set<WagerNumber> winnerSet = new HashSet(winners.values().stream().flatMap(List::stream).collect(Collectors.toList()));
         //Map<Integer, Double> winnerNoMap = winnerSet.stream().collect(Collectors.toMap(num -> num.getNum(), num -> num.getWinningPrize()));
         Map<Integer, Double> winnerNoMap = winners.values().stream().flatMap(List::stream).collect(Collectors.toMap(num -> num.getNum(), num -> num.getWinningPrize()));
         for (PointsDetails bet : allBets) {
-            ArrayList<Points> points = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>(){});
+            ArrayList<Points> points = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
             double amt = 0.0;
             WinningDetails winningDetails = new WinningDetails();
             for (Points point : points) {
                 double winningAmount = MULTIPLIER * point.getWinningMultiplier();
                 final List<Integer> betPoints = getPoints(point.getPoints());
                 for (Integer num : betPoints) {
-                    if(winnerNoMap.containsKey(num)) {
+                    if (winnerNoMap.containsKey(num)) {
                         amt = amt + winningAmount;
                         if (winningDetails.getWinningNums().get(num) != null) {
                             winningDetails.getWinningNums().put(num, winningDetails.getWinningNums().get(num) + winningAmount);
@@ -161,7 +163,7 @@ public class PointPlayService {
                     }
                 }
             }
-            if(Double.compare(amt, 0.0) > 0 && winningDetails.getWinningNums().size() > 0){
+            if (Double.compare(amt, 0.0) > 0 && winningDetails.getWinningNums().size() > 0) {
                 bet.setWinningPoints(objectMapper.writeValueAsString(winningDetails));
                 bet.setIsWinner(1);
                 PointsDetails wagerDetails = pointPlayRepository.save(bet);
@@ -185,47 +187,49 @@ public class PointPlayService {
     }
 
     public DrawResponse getWinnerList(String drawTime) {
-        try{
-            WinnerPointDetails wagerWinnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
-            if(Objects.isNull(wagerWinnerDetails)){
-                throw new ResourceNotFoundException("invalid draw time or result is not calculated yet", 5);
+        try {
+            WinnerPointDetails winnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
+            if (Objects.isNull(winnerDetails)) {
+                throw new ResourceNotFoundException("invalid draw time or result is not calculated yet", 28);
             }
             DrawResponse wagerWinnerResponse = new DrawResponse();
-            wagerWinnerResponse.setDrawTime(wagerWinnerDetails.getDrawTime());
-            Map<String, String> winner = objectMapper.readValue(wagerWinnerDetails.getWinnerPoint(), new TypeReference<Map<String, String>>(){});
+            wagerWinnerResponse.setDrawTime(winnerDetails.getDrawTime());
+            Map<String, String> winner = objectMapper.readValue(winnerDetails.getWinnerPoint(), new TypeReference<Map<String, String>>() {
+            });
             wagerWinnerResponse.setWinnerNumber(winner.keySet().stream().map(val -> Integer.parseInt(val)).collect(Collectors.toList()));
-            wagerWinnerResponse.setDate(wagerWinnerDetails.getCreationTime().toString());
+            wagerWinnerResponse.setDate(winnerDetails.getCreationTime().toString());
             return wagerWinnerResponse;
-        }catch (Exception e){
-            log.error("problem is parsing the JSON", e);
-            throw new ResourceNotFoundException("problem is getting winner details", e);
+        } catch (Exception e) {
+            log.error("problem is parsing the JSON or pasrsing errror", e);
+            throw new ResourceNotFoundException(e.getMessage(), 29);
         }
 
     }
 
     public PointWinnerResponse checkWinner(String ticketId) {
-        if(Objects.isNull(ticketId) || ticketId.isEmpty()){
-            throw new ResourceNotFoundException("ticketId is empty or null", 6);
+        if (Objects.isNull(ticketId) || ticketId.isEmpty()) {
+            throw new ResourceNotFoundException("ticketId is empty or null", 30);
         }
         PointsDetails pointsDetails = pointPlayRepository.getById(ticketId);
-        if(Objects.isNull(pointsDetails)){
-            throw new ResourceNotFoundException("ticketId not found in system", 7);
+        if (Objects.isNull(pointsDetails)) {
+            throw new ResourceNotFoundException("ticketId not found in system", 31);
         }
         return getPlayerResponse(pointsDetails);
     }
 
     public PointWinnerResponse claimWinner(String ticketId) {
-        if(Objects.isNull(ticketId) || ticketId.isEmpty()){
-            throw new ResourceNotFoundException("ticketId is empty or null", 6);
-        }
-        PointsDetails pointsDetails = pointPlayRepository.getById(ticketId);
-        if(Objects.isNull(pointsDetails)){
-            throw new ResourceNotFoundException("ticketId not found in system", 7);
-        }
-        if(Objects.isNull(pointsDetails.getWinningPoints())){
-            throw new ResourceNotFoundException("no winning numbers found in the tickets", 8);
+        if (Objects.isNull(ticketId) || ticketId.isEmpty()) {
+            throw new ResourceNotFoundException("ticketId is empty or null", 32);
         }
         try {
+            PointsDetails pointsDetails = pointPlayRepository.getById(ticketId);
+            if (Objects.isNull(pointsDetails)) {
+                throw new ResourceNotFoundException("ticketId not found in system", 33);
+            }
+            if (Objects.isNull(pointsDetails.getWinningPoints())) {
+                throw new ResourceNotFoundException("no winning numbers found in the tickets", 34);
+            }
+
             WinningDetails winningDetails = objectMapper.readValue(pointsDetails.getWinningPoints(), WinningDetails.class);
             double winningPrize = winningDetails.getWinningNums().values().stream().mapToDouble(i -> i).sum();
             Retailer byId = retailerRepository.getById(pointsDetails.getRetailId());
@@ -234,21 +238,21 @@ public class PointPlayService {
             retailerAuditRepository.save(audit);
             retailerRepository.updateBalance(winningPrize, byId.getRetailId());
             log.info("winning points details: {}", winningDetails);
-        } catch (JsonProcessingException e) {
+            pointsDetails.setIsClaimed(1);
+            pointsDetails.setIsClaimedTime(LocalDateTime.now());
+            pointsDetails = pointPlayRepository.save(pointsDetails);
+            return getPlayerResponse(pointsDetails);
+        } catch (Exception e) {
             log.error("json parsing exception in claim winner ticketId:{}", ticketId, e);
-            throw new ResourceNotFoundException("JSON parsing exception in claim winner", 202);
+            throw new ResourceNotFoundException("JSON parsing exception in claim winner or ticket id not found", 35);
         }
-        pointsDetails.setIsClaimed(1);
-        pointsDetails.setIsClaimedTime(LocalDateTime.now());
-        pointsDetails = pointPlayRepository.save(pointsDetails);
-        return getPlayerResponse(pointsDetails);
     }
 
     public List<PointWinnerResponse> getRetailerTickets(String retailerId, Optional<String> localDate) {
         String date = null;
-        if(!localDate.isPresent()){
+        if (!localDate.isPresent()) {
             date = LocalDate.now().toString();
-        }else {
+        } else {
             date = localDate.get().toString();
         }
         final List<PointsDetails> pointsDetails = pointPlayRepository.findByRetailerIdAndCreationDate(retailerId, atStartOfDay(date), atEndOfDay(date));
@@ -259,33 +263,33 @@ public class PointPlayService {
         return pointWinnerResponses;
     }
 
-    public PointWinnerResponse getPlayerResponse(PointsDetails pointsDetails){
+    public PointWinnerResponse getPlayerResponse(PointsDetails pointsDetails) {
         return PointWinnerResponse.builder().retailId(pointsDetails.getRetailId()).drawTime(pointsDetails.getDrawTime())
                 .ticketId(pointsDetails.getTicketId()).winningPoints(pointsDetails.getWinningPoints())
                 .points(pointsDetails.getPoints()).isClaimed(Objects.nonNull(pointsDetails.getIsClaimed()) && pointsDetails.getIsClaimed() != 0)
                 .ticketTime(pointsDetails.getCreationTime().toString())
-                .isWinner(Objects.nonNull(pointsDetails.getWinningPoints()) && pointsDetails.getWinningPoints().length() > 1 )
+                .isWinner(Objects.nonNull(pointsDetails.getWinningPoints()) && pointsDetails.getWinningPoints().length() > 1)
                 .claimTime(Objects.nonNull(pointsDetails.getIsClaimedTime()) ? pointsDetails.getIsClaimedTime().toString() : "").build();
     }
 
     public RetailerResponse getMyBalance(String retailerId) {
-        if(Objects.isNull(retailerId) || retailerId.isEmpty()){
-            throw new ResourceNotFoundException("retailer is is empty or null", 9);
+        if (Objects.isNull(retailerId) || retailerId.isEmpty()) {
+            throw new ResourceNotFoundException("retailer is empty or null", 36);
         }
         final Retailer retailer = retailerRepository.getById(retailerId);
-        if(Objects.isNull(retailer)){
-            throw new ResourceNotFoundException("retailer is not found in system", 10);
+        if (Objects.isNull(retailer)) {
+            throw new ResourceNotFoundException("retailer is not found in system", 37);
         }
         return RetailerResponse.builder().retailId(retailerId).balance(retailer.getBalance()).
                 isAdmin(Integer.parseInt(retailerId) == 100).build();
     }
 
     public List<DrawDetailsReportResponse> getDrawDetails(String retailerId, String date) {
-        if(Objects.isNull(date) || date.isEmpty()){
-            throw new ResourceNotFoundException("date is empty or null", 10);
+        if (Objects.isNull(date) || date.isEmpty()) {
+            throw new ResourceNotFoundException("date is empty or null", 38);
         }
-        if(Objects.isNull(retailerId) || retailerId.isEmpty()){
-            throw new ResourceNotFoundException("retailId is empty or null", 11);
+        if (Objects.isNull(retailerId) || retailerId.isEmpty()) {
+            throw new ResourceNotFoundException("retailId is empty or null", 39);
         }
         final List<PointsDetails> pointsDetails = pointPlayRepository.findByRetailerIdAndCreationDate(retailerId, atStartOfDay(date), atEndOfDay(date));
         Collections.sort(pointsDetails, Comparator.comparing(PointsDetails::getDrawTime));
@@ -305,11 +309,11 @@ public class PointPlayService {
     }
 
     public List<RetailerTicketsReportResponse> retailerTickets(String retailerId, String date) {
-        if(Objects.isNull(date) || date.isEmpty()){
-            throw new ResourceNotFoundException("date is empty or null", 12);
+        if (Objects.isNull(date) || date.isEmpty()) {
+            throw new ResourceNotFoundException("date is empty or null", 40);
         }
-        if(Objects.isNull(retailerId) || retailerId.isEmpty()){
-            throw new ResourceNotFoundException("retailsId is empty or null", 13);
+        if (Objects.isNull(retailerId) || retailerId.isEmpty()) {
+            throw new ResourceNotFoundException("retailsId is empty or null", 41);
         }
         final List<PointsDetails> pointsDetails = pointPlayRepository.findByRetailerIdAndCreationDate(retailerId, atStartOfDay(date), atEndOfDay(date));
         Collections.sort(pointsDetails, Comparator.comparing(PointsDetails::getDrawTime));
@@ -331,21 +335,21 @@ public class PointPlayService {
     }
 
     private int betPoints(String points) {
-        if(Objects.isNull(points))
+        if (Objects.isNull(points))
             return 0;
         final List<Points> betPoints = parsePoints(points);
-        if(Objects.isNull(betPoints))
+        if (Objects.isNull(betPoints))
             return 0;
         return betPoints.stream().map(betPoint ->
-                betPoint.getPoints().values().stream().mapToInt(Integer::intValue).sum() * betPoint.getPricePerPoint()).
+                        betPoint.getPoints().values().stream().mapToInt(Integer::intValue).sum() * betPoint.getPricePerPoint()).
                 collect(Collectors.summingInt(Integer::intValue));
     }
 
     private int betCount(String points) {
-        if(Objects.isNull(points))
+        if (Objects.isNull(points))
             return 0;
         final List<Points> betPoints = parsePoints(points);
-        if(Objects.isNull(betPoints))
+        if (Objects.isNull(betPoints))
             return 0;
         return betPoints.stream().map(betPoint ->
                         betPoint.getPoints().values().stream().mapToInt(Integer::intValue).sum()).
@@ -361,7 +365,7 @@ public class PointPlayService {
             return wonPoints.stream().mapToDouble(point -> point.getWinningPrize()).sum();
         } catch (JsonProcessingException e) {
             log.error("winningPoints: {}", winningPoint);
-            throw new ResourceNotFoundException("issue in parsing json", 14);
+            throw new ResourceNotFoundException("issue in parsing json winning point", 42);
         }
     }
 
@@ -371,21 +375,22 @@ public class PointPlayService {
             log.info("winningPoint :{}", winningPoint);
             List<WinningPoint> wonPoints = objectMapper.readValue(winningPoint, new TypeReference<List<WinningPoint>>() {
             });
-            if(Objects.nonNull(wonPoints))
-                reportResponse.setWinNumbers(wonPoints.stream().map( num -> num.getNum()).collect(Collectors.toList()));
+            if (Objects.nonNull(wonPoints))
+                reportResponse.setWinNumbers(wonPoints.stream().map(num -> num.getNum()).collect(Collectors.toList()));
             return wonPoints.size();
         } catch (JsonProcessingException e) {
             log.error("winningCount: {}", winningPoint);
-            throw new ResourceNotFoundException("issue in parsing json winningCount", 14);
+            throw new ResourceNotFoundException("issue in parsing json winningCount", 43);
         }
     }
 
-    List<Points> parsePoints(String points){
+    List<Points> parsePoints(String points) {
         try {
-            return objectMapper.readValue(points, new TypeReference<ArrayList<Points>>(){});
+            return objectMapper.readValue(points, new TypeReference<ArrayList<Points>>() {
+            });
         } catch (JsonProcessingException e) {
             log.error("parsePoints: {}", points);
-            throw new ResourceNotFoundException("issue in parsing json", 14);
+            throw new ResourceNotFoundException("issue in parsing json", 44);
         }
     }
 }
