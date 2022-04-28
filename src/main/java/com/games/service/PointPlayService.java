@@ -9,8 +9,10 @@ import com.games.payload.*;
 import com.games.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -89,7 +91,37 @@ public class PointPlayService {
         pointsDetails = pointPlayRepository.saveAndFlush(pointsDetails);
         return PointPlayResponse.builder().drawTime(pointsDetails.getDrawTime()).
                 currentTime(pointsDetails.getCreationTime()).points(pointsDetails.getPoints()).
-                ticketId(pointsDetails.getTicketId()).build();
+                ticketId(pointsDetails.getTicketId()).retailId(gamePlayRequest.getRetailId()).totalTicketValue(wager).build();
+    }
+
+    public PointPlayResponse getTicketDetails(String ticketId) {
+        PointsDetails pointsDetails = pointPlayRepository.findByTicketId(ticketId);
+        if(Objects.isNull(pointsDetails)){
+            log.error("invalid ticket details: {}", ticketId);
+            throw new ResourceNotFoundException("ticket not found or invalid",46);
+        }
+        try{
+            ArrayList<Points> betPoints = objectMapper.readValue(pointsDetails.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
+
+            Optional<Integer> OptionalPlayerWager = betPoints.stream().map
+                    (val -> val.getPricePerPoint() * val.getPoints().values().stream().mapToInt(i -> i).sum()).reduce(Integer::sum);
+            return PointPlayResponse.builder().drawTime(pointsDetails.getDrawTime()).
+                    currentTime(pointsDetails.getCreationTime()).points(pointsDetails.getPoints()).
+                    ticketId(pointsDetails.getTicketId()).retailId(pointsDetails.getRetailId()).totalTicketValue(OptionalPlayerWager.get()).build();
+        } catch(Exception e){
+            log.error("error is parsing in points detailin get ticket details :", e);
+            throw  new ResourceNotFoundException(" error is parsing in points detailin get ticket details ",100);
+        }
+    }
+
+    public void deleteTicketDetails(String ticketId) {
+        PointsDetails pointsDetails = pointPlayRepository.findByTicketId(ticketId);
+        if(Objects.isNull(pointsDetails)){
+            log.error("invalid ticket details: {}", ticketId);
+            throw new ResourceNotFoundException("ticket not found or invalid",46);
+        }
+        pointPlayRepository.delete(pointsDetails);
     }
 
 

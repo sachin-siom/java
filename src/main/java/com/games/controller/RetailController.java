@@ -53,16 +53,18 @@ public class RetailController {
         }
     }
 
-    @GetMapping(value = "/printTicket/{ticketId}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<InputStreamResource> getTicket(@PathVariable("ticketId") String ticketId) {
-        ByteArrayInputStream bis = ticketPDF.citiesReport(ticketId);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "inline; filename=citiesreport.pdf");
+    @GetMapping(value = "/printTicket/{ticketId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PointPlayResponse> getTicket(@PathVariable("ticketId") String ticketId) {
         return ResponseEntity
                 .ok()
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(new InputStreamResource(bis));
+                .body(pointPlayService.getTicketDetails(ticketId));
+    }
+
+    @DeleteMapping(value = "/deleteTicket/{ticketId}")
+    public ResponseEntity<PointPlayResponse> deleteTicket(@PathVariable("ticketId") String ticketId) {
+        pointPlayService.deleteTicketDetails(ticketId);
+        return ResponseEntity
+                .ok().build();
     }
 
     @GetMapping(value = "/winnerList/{drawTime}", produces = MediaType.APPLICATION_JSON_VALUE)

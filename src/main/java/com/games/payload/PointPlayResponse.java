@@ -12,4 +12,6 @@ public class PointPlayResponse {
     private String ticketId;
     private String drawTime;
     private LocalDateTime currentTime;
+    private String retailId;
+    private double totalTicketValue;
 }

@@ -25,15 +25,10 @@ public class User {
             })
     @GeneratedValue(generator = "user-sequence-generator")
     private Long id;
-
     @Column(nullable = false, unique = true)
     private String username;
-
     private String password;
-
     private String role;
-
     private String macAddress;
-
     private boolean isEnabled;
 }
