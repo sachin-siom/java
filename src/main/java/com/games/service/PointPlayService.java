@@ -79,7 +79,8 @@ public class PointPlayService {
             pointsDetails = PointsDetails.builder().isWinner(0).
                     points(objectMapper.writeValueAsString(gamePlayRequest.getPointArrays())).
                     retailId(gamePlayRequest.getRetailId()).drawTime(getDrawTime(gamePlayRequest.getDrawTime())).
-                    ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository)).isPrinted(false).build();
+                    ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository))
+                    .isPrinted(false).isDeleted(false).build();
         } catch (JsonProcessingException e) {
             throw new ResourceNotFoundException("point array in not in proper JSON format", 26);
         }
@@ -127,7 +128,8 @@ public class PointPlayService {
             log.error("invalid ticket details: {}", ticketId);
             throw new ResourceNotFoundException("ticket not found or invalid",46);
         }
-        pointPlayRepository.delete(pointsDetails);
+        pointsDetails.setDeleted(true);
+        pointPlayRepository.saveAndFlush(pointsDetails);
     }
 
 
@@ -302,12 +304,25 @@ public class PointPlayService {
     }
 
     public PointWinnerResponse getPlayerResponse(PointsDetails pointsDetails) {
+        ArrayList<Points> betPoints = null;
+        try {
+            betPoints = objectMapper.readValue(pointsDetails.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.error("error in parsing player response",e);
+        }
+        Optional<Integer> OptionalPlayerWager = betPoints.stream().map
+                (val -> val.getPricePerPoint() * val.getPoints().values().stream().mapToInt(i -> i).sum()).reduce(Integer::sum);
+
         return PointWinnerResponse.builder().retailId(pointsDetails.getRetailId()).drawTime(pointsDetails.getDrawTime())
                 .ticketId(pointsDetails.getTicketId()).winningPoints(pointsDetails.getWinningPoints())
                 .points(pointsDetails.getPoints()).isClaimed(Objects.nonNull(pointsDetails.getIsClaimed()) && pointsDetails.getIsClaimed() != 0)
                 .ticketTime(pointsDetails.getCreationTime().toString())
                 .isWinner(Objects.nonNull(pointsDetails.getWinningPoints()) && pointsDetails.getWinningPoints().length() > 1)
-                .claimTime(Objects.nonNull(pointsDetails.getIsClaimedTime()) ? pointsDetails.getIsClaimedTime().toString() : "").build();
+                .claimTime(Objects.nonNull(pointsDetails.getIsClaimedTime()) ? pointsDetails.getIsClaimedTime().toString() : "")
+                .totalTicketValue(OptionalPlayerWager.get())
+                .isDeleted(pointsDetails.isDeleted())
+                .build();
     }
 
     public RetailerResponse getMyBalance(String retailerId) {

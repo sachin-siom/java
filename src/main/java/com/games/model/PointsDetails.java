@@ -31,6 +31,7 @@ public class PointsDetails {
     @Column(columnDefinition = "LONGTEXT")
     private String winningPoints;
     private boolean isPrinted;
+    private boolean isDeleted;
     @CreationTimestamp
     private LocalDateTime creationTime;
 }

@@ -17,4 +17,6 @@ public class PointWinnerResponse {
     private boolean isWinner;
     private boolean isClaimed;
     private String claimTime;
+    private double totalTicketValue;
+    private boolean isDeleted;
 }
