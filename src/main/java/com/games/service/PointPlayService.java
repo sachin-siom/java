@@ -79,7 +79,7 @@ public class PointPlayService {
             pointsDetails = PointsDetails.builder().isWinner(0).
                     points(objectMapper.writeValueAsString(gamePlayRequest.getPointArrays())).
                     retailId(gamePlayRequest.getRetailId()).drawTime(getDrawTime(gamePlayRequest.getDrawTime())).
-                    ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository)).build();
+                    ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository)).isPrinted(false).build();
         } catch (JsonProcessingException e) {
             throw new ResourceNotFoundException("point array in not in proper JSON format", 26);
         }
@@ -100,7 +100,13 @@ public class PointPlayService {
             log.error("invalid ticket details: {}", ticketId);
             throw new ResourceNotFoundException("ticket not found or invalid",46);
         }
+        if(pointsDetails.isPrinted()){
+            log.error(" ticket is already printed: {}", ticketId);
+            throw new ResourceNotFoundException("ticket is already printed",101);
+        }
         try{
+            pointsDetails.setPrinted(true);
+            pointPlayRepository.saveAndFlush(pointsDetails);
             ArrayList<Points> betPoints = objectMapper.readValue(pointsDetails.getPoints(), new TypeReference<ArrayList<Points>>() {
             });
 

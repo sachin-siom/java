@@ -9,26 +9,18 @@ import com.games.service.PointPlayService;
 import com.games.service.PointTicketService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
-import java.io.ByteArrayInputStream;
-
-import static javax.validation.Validation.buildDefaultValidatorFactory;
 
 
 @Slf4j
 @RestController
 @RequestMapping("/retail")
+@CrossOrigin(origins = {"${settings.cors_origin}"})
 public class RetailController {
 
     @Autowired

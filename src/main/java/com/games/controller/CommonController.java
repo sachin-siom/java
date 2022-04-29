@@ -23,6 +23,7 @@ import static com.games.util.GameUtil.getDate;
 @Slf4j
 @RestController
 @RequestMapping("/common")
+@CrossOrigin(origins = {"${settings.cors_origin}"})
 public class CommonController {
 
     @Autowired
@@ -34,6 +35,17 @@ public class CommonController {
     @GetMapping("/hello")
     public ResponseEntity<String> hello(){
         return new ResponseEntity<>("Hello common page", HttpStatus.OK);
+    }
+
+    @GetMapping("/serverTime")
+    public ResponseEntity<String> serverTime() {
+        try{
+            return new ResponseEntity<>(LocalDateTime.now().toString(), HttpStatus.OK);
+        }
+        catch (Exception ex) {
+            log.error("problem in fetching /servertime ", ex);
+            throw new ResourceNotFoundException("server problem in getting servertime",15);
+        }
     }
 
     @GetMapping("/tickets/{retailerId}")
@@ -57,17 +69,6 @@ public class CommonController {
         catch (Exception ex) {
             log.error("problem in fetching /mybalance for reatil id: {} ", retailerId, ex);
             throw new ResourceNotFoundException("server problem in getting mybalance",14);
-        }
-    }
-
-    @GetMapping("/serverTime")
-    public ResponseEntity<String> serverTime() {
-        try{
-            return new ResponseEntity<>(LocalDateTime.now().toString(), HttpStatus.OK);
-        }
-        catch (Exception ex) {
-            log.error("problem in fetching /servertime ", ex);
-            throw new ResourceNotFoundException("server problem in getting servertime",15);
         }
     }
 

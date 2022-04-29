@@ -30,6 +30,7 @@ public class PointsDetails {
     private LocalDateTime isClaimedTime;
     @Column(columnDefinition = "LONGTEXT")
     private String winningPoints;
+    private boolean isPrinted;
     @CreationTimestamp
     private LocalDateTime creationTime;
 }

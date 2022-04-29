@@ -35,6 +35,7 @@ import static com.games.util.GameUtil.ROLE;
 @Slf4j
 @RestController
 @RequestMapping("/admin")
+@CrossOrigin(origins = {"${settings.cors_origin}"})
 public class AdminController {
 
     @Autowired
