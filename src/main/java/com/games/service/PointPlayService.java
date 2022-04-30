@@ -9,20 +9,15 @@ import com.games.payload.*;
 import com.games.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.games.util.GameUtil.*;
-import static javax.validation.Validation.*;
 
 @Slf4j
 @Service
@@ -80,7 +75,7 @@ public class PointPlayService {
                     points(objectMapper.writeValueAsString(gamePlayRequest.getPointArrays())).
                     retailId(gamePlayRequest.getRetailId()).drawTime(getDrawTime(gamePlayRequest.getDrawTime())).
                     ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository))
-                    .isPrinted(false).isDeleted(false).build();
+                    .isPrinted(false).isDeleted(false).totalPoints(wager).build();
         } catch (JsonProcessingException e) {
             throw new ResourceNotFoundException("point array in not in proper JSON format", 26);
         }
@@ -108,14 +103,9 @@ public class PointPlayService {
         try{
             pointsDetails.setPrinted(true);
             pointPlayRepository.saveAndFlush(pointsDetails);
-            ArrayList<Points> betPoints = objectMapper.readValue(pointsDetails.getPoints(), new TypeReference<ArrayList<Points>>() {
-            });
-
-            Optional<Integer> OptionalPlayerWager = betPoints.stream().map
-                    (val -> val.getPricePerPoint() * val.getPoints().values().stream().mapToInt(i -> i).sum()).reduce(Integer::sum);
             return PointPlayResponse.builder().drawTime(pointsDetails.getDrawTime()).
                     currentTime(pointsDetails.getCreationTime()).points(pointsDetails.getPoints()).
-                    ticketId(pointsDetails.getTicketId()).retailId(pointsDetails.getRetailId()).totalTicketValue(OptionalPlayerWager.get()).build();
+                    ticketId(pointsDetails.getTicketId()).retailId(pointsDetails.getRetailId()).totalTicketValue(pointsDetails.getTotalPoints()).build();
         } catch(Exception e){
             log.error("error is parsing in points detailin get ticket details :", e);
             throw  new ResourceNotFoundException(" error is parsing in points detailin get ticket details ",100);
@@ -304,23 +294,13 @@ public class PointPlayService {
     }
 
     public PointWinnerResponse getPlayerResponse(PointsDetails pointsDetails) {
-        ArrayList<Points> betPoints = null;
-        try {
-            betPoints = objectMapper.readValue(pointsDetails.getPoints(), new TypeReference<ArrayList<Points>>() {
-            });
-        } catch (JsonProcessingException e) {
-            log.error("error in parsing player response",e);
-        }
-        Optional<Integer> OptionalPlayerWager = betPoints.stream().map
-                (val -> val.getPricePerPoint() * val.getPoints().values().stream().mapToInt(i -> i).sum()).reduce(Integer::sum);
-
         return PointWinnerResponse.builder().retailId(pointsDetails.getRetailId()).drawTime(pointsDetails.getDrawTime())
                 .ticketId(pointsDetails.getTicketId()).winningPoints(pointsDetails.getWinningPoints())
                 .points(pointsDetails.getPoints()).isClaimed(Objects.nonNull(pointsDetails.getIsClaimed()) && pointsDetails.getIsClaimed() != 0)
                 .ticketTime(pointsDetails.getCreationTime().toString())
                 .isWinner(Objects.nonNull(pointsDetails.getWinningPoints()) && pointsDetails.getWinningPoints().length() > 1)
                 .claimTime(Objects.nonNull(pointsDetails.getIsClaimedTime()) ? pointsDetails.getIsClaimedTime().toString() : "")
-                .totalTicketValue(OptionalPlayerWager.get())
+                .totalTicketValue(pointsDetails.getTotalPoints())
                 .isDeleted(pointsDetails.isDeleted())
                 .build();
     }

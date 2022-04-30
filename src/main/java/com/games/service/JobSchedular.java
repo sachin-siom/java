@@ -21,6 +21,7 @@ public class JobSchedular {
     @Autowired
     private CommissionService commissionService;
 
+    //@Scheduled(cron = "0 0/15 * * * ?")
     @Scheduled(cron = "0 0/15 * * * ?")
     public void scheduleFixedDelayTaskBetWinner() {
         String drawTime = null;

@@ -3,6 +3,7 @@ package com.games.controller;
 import com.games.exception.ResourceNotFoundException;
 import com.games.model.RetailerDailyReport;
 import com.games.payload.*;
+import com.games.repository.RetailerRepository;
 import com.games.service.CommissionService;
 import com.games.service.PointPlayService;
 import lombok.extern.slf4j.Slf4j;
@@ -127,6 +128,28 @@ public class CommonController {
         } catch (Exception ex) {
             log.error("problem in running report ", ex);
             throw new ResourceNotFoundException("problem in running report",19);
+        }
+    }
+
+    @GetMapping(value = "/commissionReport/{fdate}/{tdate}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommissionReportResponse> commissionReport(@PathVariable("fdate")String fdate, @PathVariable("tdate")String tdate ) {
+        try {
+            CommissionReportResponse responses = commissionService.commissionReport(fdate, tdate);
+            return new ResponseEntity(responses, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("problem in running commissionReport ", ex);
+            throw new ResourceNotFoundException("problem in running commissionReport",19);
+        }
+    }
+
+    @GetMapping(value = "/commissionReport/{retailId}/{fdate}/{tdate}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommissionReportResponse> report(@PathVariable("retailId")String retailsId, @PathVariable("fdate")String fdate, @PathVariable("tdate")String tdate ) {
+        try {
+            CommissionReportResponse responses = commissionService.commissionReport(retailsId, fdate, tdate);
+            return new ResponseEntity(responses, HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error("problem in running commissionReport ", ex);
+            throw new ResourceNotFoundException("problem in running commissionReport",19);
         }
     }
 }

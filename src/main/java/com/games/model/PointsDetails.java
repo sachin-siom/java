@@ -25,11 +25,12 @@ public class PointsDetails {
     private String drawTime;
     @Column(columnDefinition = "LONGTEXT")
     private String points;
-    private Integer isWinner;
+    private Integer isWinner; // 1-> winner 0-losser
     private Integer isClaimed;
     private LocalDateTime isClaimedTime;
     @Column(columnDefinition = "LONGTEXT")
     private String winningPoints;
+    private double totalPoints;
     private boolean isPrinted;
     private boolean isDeleted;
     @CreationTimestamp

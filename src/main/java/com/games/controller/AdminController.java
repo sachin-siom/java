@@ -2,25 +2,19 @@ package com.games.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.games.exception.ResourceNotFoundException;
-import com.games.model.Creditaor;
 import com.games.model.Retailer;
-import com.games.model.RetailerAudit;
 import com.games.model.User;
 import com.games.payload.*;
 import com.games.repository.RetailerAuditRepository;
 import com.games.repository.RetailerRepository;
 import com.games.repository.UserServiceRepository;
 import com.games.service.AdminService;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -28,9 +22,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.games.util.GameUtil.PORTAL_UPDATE;
-import static com.games.util.GameUtil.ROLE;
 
 @Slf4j
 @RestController
