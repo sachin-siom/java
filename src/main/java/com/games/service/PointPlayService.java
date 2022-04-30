@@ -118,6 +118,15 @@ public class PointPlayService {
             log.error("invalid ticket details: {}", ticketId);
             throw new ResourceNotFoundException("ticket not found or invalid",46);
         }
+        Optional<Retailer> optionalRetailer = retailerRepository.findById(pointsDetails.getRetailId());
+        if (!optionalRetailer.isPresent()) {
+            log.error("Retail id not found or not exist");
+            throw new ResourceNotFoundException("Retail id not found or not exist", 24);
+        }
+        RetailerAudit audit = RetailerAudit.builder().retailId(pointsDetails.getRetailId()).ticketId(pointsDetails.getTicketId()).
+                isCredit(1).creditor(Creditaor.USER.getVal()).amount(pointsDetails.getTotalPoints()).balance(pointsDetails.getTotalPoints() + optionalRetailer.get().getBalance()).build();
+        retailerAuditRepository.save(audit);
+        retailerRepository.updateBalance(pointsDetails.getTotalPoints(), pointsDetails.getRetailId());
         pointsDetails.setDeleted(true);
         pointPlayRepository.saveAndFlush(pointsDetails);
     }
@@ -302,6 +311,7 @@ public class PointPlayService {
                 .claimTime(Objects.nonNull(pointsDetails.getIsClaimedTime()) ? pointsDetails.getIsClaimedTime().toString() : "")
                 .totalTicketValue(pointsDetails.getTotalPoints())
                 .isDeleted(pointsDetails.isDeleted())
+                .isPrinted(pointsDetails.isPrinted())
                 .build();
     }
 

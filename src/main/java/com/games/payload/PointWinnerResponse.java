@@ -19,4 +19,5 @@ public class PointWinnerResponse {
     private String claimTime;
     private double totalTicketValue;
     private boolean isDeleted;
+    private boolean isPrinted;
 }

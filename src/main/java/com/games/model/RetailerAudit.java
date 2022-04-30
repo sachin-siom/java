@@ -32,7 +32,7 @@ public class RetailerAudit {
     private String retailId;
     private double balance; // current balance
     private double amount; // txn amount
-    private int isCredit;
+    private int isCredit; // 0 -> debit from retailer account, 1 -> credit into retailer account
     private int creditor; // 1 admin, 2 player
     private String ticketId;
     @CreationTimestamp

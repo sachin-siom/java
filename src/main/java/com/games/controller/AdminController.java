@@ -208,7 +208,7 @@ public class AdminController {
     public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
-            if(Objects.nonNull(macAddress)){
+            if(Objects.nonNull(macAddress)) {
                 user.get().setMacAddress(macAddress);
                 userServiceRepository.save(user.get());
                 return new ResponseEntity<>(new AuthenticationBean("Mac registration is successful "), HttpStatus.OK);
