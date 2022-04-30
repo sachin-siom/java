@@ -198,4 +198,34 @@ public class AdminController {
         return new ResponseEntity<>(new AuthenticationBean("You are authenticated"), HttpStatus.OK);
     }
 
+    @PostMapping("/checkMac")
+    public ResponseEntity<AuthenticationBean> checkMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
+        Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
+        if (user.isPresent()) {
+            if(Objects.nonNull(user.get().getMacAddress()) && Objects.nonNull(macAddress)){
+                if(user.get().getMacAddress().equals(macAddress)) {
+                    return new ResponseEntity<>(new AuthenticationBean("Mac address validation are successful"), HttpStatus.OK);
+                }
+            }
+        } else {
+            throw new ResourceNotFoundException("Retailid not exists", 7);
+        }
+        return new ResponseEntity<>(new AuthenticationBean("Invalid mac address"), HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/registerMac")
+    public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
+        Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
+        if (user.isPresent()) {
+            if(Objects.nonNull(macAddress)){
+                user.get().setMacAddress(macAddress);
+                userServiceRepository.save(user.get());
+                return new ResponseEntity<>(new AuthenticationBean("Mac registration is successful "), HttpStatus.OK);
+            }
+        } else {
+            throw new ResourceNotFoundException("Retailid not exists", 7);
+        }
+        return new ResponseEntity<>(new AuthenticationBean("Invalid mac address or retail id"), HttpStatus.BAD_REQUEST);
+    }
+
 }
