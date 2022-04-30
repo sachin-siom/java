@@ -83,6 +83,10 @@ public class CommissionService {
                log.info("TicketId :{} retailId:{} date:{}", retailerAudit.getTicketId(), retailsId, date);
                 continue;
            }
+            if(retailerAudit.getCreditor() == 3) {
+                log.info("TicketId :{} retailId:{} date:{}", retailerAudit.getTicketId(), retailsId, date);
+                continue;
+            }
            // ticket money debited
            if(Objects.equals(retailerAudit.getIsCredit(), 0)){
                playAmount += retailerAudit.getAmount();

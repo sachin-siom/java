@@ -24,7 +24,7 @@ import static com.games.util.GameUtil.getDate;
 @Slf4j
 @RestController
 @RequestMapping("/common")
-@CrossOrigin(origins = {"${settings.cors_origin}"})
+@CrossOrigin(origins = {"${settings.cors_origin}", "${settings.cors_origin.localhost}"})
 public class CommonController {
 
     @Autowired

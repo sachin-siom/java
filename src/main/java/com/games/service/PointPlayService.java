@@ -124,7 +124,7 @@ public class PointPlayService {
             throw new ResourceNotFoundException("Retail id not found or not exist", 24);
         }
         RetailerAudit audit = RetailerAudit.builder().retailId(pointsDetails.getRetailId()).ticketId(pointsDetails.getTicketId()).
-                isCredit(1).creditor(Creditaor.USER.getVal()).amount(pointsDetails.getTotalPoints()).balance(pointsDetails.getTotalPoints() + optionalRetailer.get().getBalance()).build();
+                isCredit(1).creditor(Creditaor.SYSTEM.getVal()).amount(pointsDetails.getTotalPoints()).balance(pointsDetails.getTotalPoints() + optionalRetailer.get().getBalance()).build();
         retailerAuditRepository.save(audit);
         retailerRepository.updateBalance(pointsDetails.getTotalPoints(), pointsDetails.getRetailId());
         pointsDetails.setDeleted(true);
@@ -273,7 +273,7 @@ public class PointPlayService {
             double winningPrize = winningDetails.getWinningNums().values().stream().mapToDouble(i -> i).sum();
             Retailer byId = retailerRepository.getById(pointsDetails.getRetailId());
             RetailerAudit audit = RetailerAudit.builder().retailId(pointsDetails.getRetailId()).ticketId(ticketId).
-                    isCredit(1).creditor(Creditaor.ADMIN.getVal()).amount(winningPrize).balance(winningPrize + byId.getBalance()).build();
+                    isCredit(1).creditor(Creditaor.USER.getVal()).amount(winningPrize).balance(winningPrize + byId.getBalance()).build();
             retailerAuditRepository.save(audit);
             retailerRepository.updateBalance(winningPrize, byId.getRetailId());
             log.info("winning points details: {}", winningDetails);

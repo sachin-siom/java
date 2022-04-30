@@ -33,7 +33,7 @@ public class RetailerAudit {
     private double balance; // current balance
     private double amount; // txn amount
     private int isCredit; // 0 -> debit from retailer account, 1 -> credit into retailer account
-    private int creditor; // 1 admin, 2 player
+    private int creditor; // 1 admin, 2 player, 3 by system {only delete case}
     private String ticketId;
     @CreationTimestamp
     private LocalDateTime creationTime;

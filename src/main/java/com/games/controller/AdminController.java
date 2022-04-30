@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = {"${settings.cors_origin}"})
+@CrossOrigin(origins = {"${settings.cors_origin}", "${settings.cors_origin.localhost}"})
 public class AdminController {
 
     @Autowired

@@ -20,7 +20,7 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 @RequestMapping("/retail")
-@CrossOrigin(origins = {"${settings.cors_origin}"})
+@CrossOrigin(origins = {"${settings.cors_origin}", "${settings.cors_origin.localhost}"})
 public class RetailController {
 
     @Autowired
