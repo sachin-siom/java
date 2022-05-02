@@ -189,7 +189,7 @@ public class AdminController {
         return new ResponseEntity<>(new AuthenticationBean("You are authenticated"), HttpStatus.OK);
     }
 
-    @PostMapping("/checkMac")
+    @PostMapping("/checkMac/{retailId}")
     public ResponseEntity<AuthenticationBean> checkMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
@@ -204,7 +204,7 @@ public class AdminController {
         return new ResponseEntity<>(new AuthenticationBean("Invalid mac address"), HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/registerMac")
+    @PostMapping("/registerMac/{retailId}")
     public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
