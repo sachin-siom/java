@@ -70,8 +70,11 @@ public class AdminController {
         }
         try {
             Optional<Retailer> retailer = retailerRepository.findById(retailId);
-            if(retailer.isPresent()){
-                return new ResponseEntity(retailer.get(), HttpStatus.OK);
+            Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.get().getRetailId())));
+            if(isEnabled.isPresent()){
+                RetailerResponse retailerResponse = RetailerResponse.builder().retailId(retailer.get().getRetailId()).balance(retailer.get().getBalance())
+                        .username(retailer.get().getUsername()).macAddress(isEnabled.get().getMacAddress()).build();
+                return new ResponseEntity(retailerResponse, HttpStatus.OK);
             }
         } catch (Exception e) {
             log.error("there is issue while fetching retailer details: ", e);
@@ -89,7 +92,7 @@ public class AdminController {
                 Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.getRetailId())));
                 if (isEnabled.isPresent()) {
                     response.add(RetailerResponse.builder().retailId(retailer.getRetailId()).balance(retailer.getBalance())
-                            .status(isEnabled.get().isEnabled()).username(retailer.getUsername()).build());
+                            .status(isEnabled.get().isEnabled()).username(retailer.getUsername()).macAddress(isEnabled.get().getMacAddress()).build());
                 }
             } catch (Exception e) {
                 log.error("there is issue while fetching user details: ", e);

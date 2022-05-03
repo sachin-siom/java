@@ -18,5 +18,6 @@ public class RetailerResponse {
     private double balance;
     private boolean isAdmin;
     private boolean status;
+    private String macAddress;
     private LocalDateTime creationTime;
 }

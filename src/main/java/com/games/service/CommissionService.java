@@ -84,7 +84,8 @@ public class CommissionService {
                 continue;
            }
             if(retailerAudit.getCreditor() == 3) {
-                log.info("TicketId :{} retailId:{} date:{}", retailerAudit.getTicketId(), retailsId, date);
+                log.info("TicketId :{} retailId:{} date:{} deducting from play amount as ticket is deleted", retailerAudit.getTicketId(), retailsId, date);
+                playAmount -= retailerAudit.getAmount();
                 continue;
             }
            // ticket money debited
