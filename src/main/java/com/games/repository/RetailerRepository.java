@@ -26,4 +26,7 @@ public interface RetailerRepository extends JpaRepository<Retailer, String>  {
     @Modifying
     @Query("update Retailer r set r.balance =:balance + r.balance where r.retailId =:retailId")
     void updateBalance(double balance, String retailId);
+
+    @Query("Select r from Retailer r where r.retailId !=: retailId ")
+    List<Retailer> selectRetailers(String retailId);
 }
