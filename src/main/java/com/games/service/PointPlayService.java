@@ -403,9 +403,9 @@ public class PointPlayService {
         if (Objects.isNull(winningPoint)) return 0.0;
         try {
             log.info("winningPoint :{}", winningPoint);
-            List<WinningPoint> wonPoints = objectMapper.readValue(winningPoint, new TypeReference<List<WinningPoint>>() {
+            WinningDetails wonPoints = objectMapper.readValue(winningPoint, new TypeReference<WinningDetails>() {
             });
-            return wonPoints.stream().mapToDouble(point -> point.getWinningPrize()).sum();
+            return wonPoints.getWinningNums().values().stream().mapToDouble(point -> point).sum();
         } catch (JsonProcessingException e) {
             log.error("winningPoints: {}", winningPoint);
             throw new ResourceNotFoundException("issue in parsing json winning point", 42);
@@ -416,11 +416,13 @@ public class PointPlayService {
         if (Objects.isNull(winningPoint)) return 0;
         try {
             log.info("winningPoint :{}", winningPoint);
-            List<WinningPoint> wonPoints = objectMapper.readValue(winningPoint, new TypeReference<List<WinningPoint>>() {
+            WinningDetails wonPoints = objectMapper.readValue(winningPoint, new TypeReference<WinningDetails>() {
             });
-            if (Objects.nonNull(wonPoints))
-                reportResponse.setWinNumbers(wonPoints.stream().map(num -> num.getNum()).collect(Collectors.toList()));
-            return wonPoints.size();
+            if (Objects.nonNull(wonPoints)){
+                reportResponse.setWinNumbers(wonPoints.getWinningNums().keySet().stream().collect(Collectors.toList()));
+                return wonPoints.getWinningNums().size();
+            }
+            return 0;
         } catch (JsonProcessingException e) {
             log.error("winningCount: {}", winningPoint);
             throw new ResourceNotFoundException("issue in parsing json winningCount", 43);
