@@ -19,5 +19,6 @@ public class RetailerResponse {
     private boolean isAdmin;
     private boolean status;
     private String macAddress;
+    private String includeNumbers;
     private LocalDateTime creationTime;
 }
