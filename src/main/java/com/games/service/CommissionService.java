@@ -114,9 +114,6 @@ public class CommissionService {
     public CommissionReportResponse commissionReport(List<PointsDetails> pointsDetails) {
         Map<String, CommissionResponse> responseHashMap = new HashMap<>();
         for (PointsDetails pointsDetail : pointsDetails) {
-            if(Objects.nonNull(pointsDetail.getIsClaimed()) && pointsDetail.getIsClaimed() == 0){
-                continue;
-            }
             CommissionResponse retailerData = responseHashMap.getOrDefault(pointsDetail.getRetailId(), new CommissionResponse());
             if(responseHashMap.containsKey(pointsDetail.getRetailId())){
                 retailerData.setPointsWon(getWinnerPoints(pointsDetail) + retailerData.getPointsWon());
@@ -154,7 +151,7 @@ public class CommissionService {
     }
 
     private double getWinnerPoints(PointsDetails pointsDetail){
-        if(pointsDetail.getIsWinner() == 1) {
+        if(pointsDetail.getIsWinner() == 1 && pointsDetail.getIsClaimed() == 1) {
             WinningDetails winningDetails = null;
             try {
                 winningDetails = objectMapper.readValue(pointsDetail.getWinningPoints(), WinningDetails.class);
