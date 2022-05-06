@@ -107,13 +107,16 @@ public class CommissionService {
     }
 
     public CommissionReportResponse commissionReport(String fdate, String tdate){
-        final List<PointsDetails> pointsDetails = pointPlayRepository.findByCreationDate(1, atStartOfDay(fdate), atEndOfDay(tdate));
+        final List<PointsDetails> pointsDetails = pointPlayRepository.findByCreationDate(atStartOfDay(fdate), atEndOfDay(tdate));
         return commissionReport(pointsDetails);
     }
 
     public CommissionReportResponse commissionReport(List<PointsDetails> pointsDetails) {
         Map<String, CommissionResponse> responseHashMap = new HashMap<>();
         for (PointsDetails pointsDetail : pointsDetails) {
+            if(Objects.nonNull(pointsDetail.getIsClaimed()) && pointsDetail.getIsClaimed() == 0){
+                continue;
+            }
             CommissionResponse retailerData = responseHashMap.getOrDefault(pointsDetail.getRetailId(), new CommissionResponse());
             if(responseHashMap.containsKey(pointsDetail.getRetailId())){
                 retailerData.setPointsWon(getWinnerPoints(pointsDetail) + retailerData.getPointsWon());
