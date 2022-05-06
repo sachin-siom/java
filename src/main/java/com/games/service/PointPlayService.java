@@ -75,7 +75,7 @@ public class PointPlayService {
                     points(objectMapper.writeValueAsString(gamePlayRequest.getPointArrays())).
                     retailId(gamePlayRequest.getRetailId()).drawTime(getDrawTime(gamePlayRequest.getDrawTime())).
                     ticketId(getTicketId(getDrawTime(gamePlayRequest.getDrawTime()), gamePlayRequest.getRetailId(), sequenceRepository))
-                    .isPrinted(false).isDeleted(false).totalPoints(wager).build();
+                    .isPrinted(false).isDeleted(false).isClaimed(0).totalPoints(wager).build();
         } catch (JsonProcessingException e) {
             throw new ResourceNotFoundException("point array in not in proper JSON format", 26);
         }
