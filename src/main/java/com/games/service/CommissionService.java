@@ -114,7 +114,7 @@ public class CommissionService {
     public CommissionReportResponse commissionReport(List<PointsDetails> pointsDetails) {
         Map<String, CommissionResponse> responseHashMap = new HashMap<>();
         for (PointsDetails pointsDetail : pointsDetails) {
-            if(Objects.nonNull(pointsDetail.getIsClaimed()) && pointsDetail.getIsClaimed() == 0){
+            if(pointsDetail.getIsClaimed() == 0){
                 continue;
             }
             CommissionResponse retailerData = responseHashMap.getOrDefault(pointsDetail.getRetailId(), new CommissionResponse());
