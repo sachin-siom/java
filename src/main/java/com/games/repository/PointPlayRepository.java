@@ -18,7 +18,7 @@ public interface PointPlayRepository extends JpaRepository<PointsDetails, String
     List<PointsDetails> findByRetailerIdAndCreationDate(
             @Param("retailId") String retailerId, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    @Query("SELECT p from PointsDetails p where p.isClaimed ?isClaimed and p.creationTime between ?2 and ?3 ")
+    @Query("SELECT p from PointsDetails p where p.isClaimed = ?1 and p.creationTime between ?2 and ?3 ")
     List<PointsDetails> findByCreationDate(int isClaimed, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     @Query("SELECT p from PointsDetails p where p.drawTime = ?1 and p.creationTime between ?2 and ?3 ")
