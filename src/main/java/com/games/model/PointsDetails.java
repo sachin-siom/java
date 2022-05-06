@@ -26,7 +26,7 @@ public class PointsDetails {
     @Column(columnDefinition = "LONGTEXT")
     private String points;
     private Integer isWinner; // 1-> winner 0-losser
-    private Integer isClaimed;
+    private Integer isClaimed; // 0 -> not claimed  1-claimed
     private LocalDateTime isClaimedTime;
     @Column(columnDefinition = "LONGTEXT")
     private String winningPoints;

@@ -107,7 +107,7 @@ public class CommissionService {
     }
 
     public CommissionReportResponse commissionReport(String fdate, String tdate){
-        final List<PointsDetails> pointsDetails = pointPlayRepository.findByCreationDate(atStartOfDay(fdate), atEndOfDay(tdate));
+        final List<PointsDetails> pointsDetails = pointPlayRepository.findByCreationDate(1, atStartOfDay(fdate), atEndOfDay(tdate));
         return commissionReport(pointsDetails);
     }
 
