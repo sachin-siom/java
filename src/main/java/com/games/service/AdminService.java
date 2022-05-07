@@ -58,14 +58,15 @@ public class AdminService {
             log.error("parsing error in updating balance", e);
             throw new ResourceNotFoundException("Balance must be in integer", 9);
         }
+        int isCredit = 1;
         if (bal <= 0) {
-            throw new ResourceNotFoundException("balance must be positive integer", 10);
+            isCredit = 0;
         }
         Optional<Retailer> retailer = retailerRepository.findById(retailId);
         if (retailer.isPresent()) {
             log.info("retailer:{} updated balance:{}", retailer, balance);
             RetailerAudit audit = RetailerAudit.builder().retailId(retailId).ticketId(PORTAL_UPDATE).
-                    isCredit(1).creditor(Creditaor.ADMIN.getVal()).amount(bal).balance(bal + retailer.get().getBalance()).build();
+                    isCredit(isCredit).creditor(Creditaor.ADMIN.getVal()).amount(bal).balance(bal + retailer.get().getBalance()).build();
             retailerAuditRepository.save(audit);
             retailerRepository.updateBalance(Double.parseDouble(balance.getBalance()), retailId);
         } else {

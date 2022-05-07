@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @Slf4j
@@ -62,6 +63,14 @@ public class RetailController {
     @GetMapping(value = "/winnerList/{drawTime}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DrawResponse> getWinnerList(@PathVariable("drawTime") String drawTime) {
         DrawResponse winnerWagerResponse = pointPlayService.getWinnerList(drawTime);
+        return ResponseEntity
+                .ok()
+                .body(winnerWagerResponse);
+    }
+
+    @GetMapping(value = "/winnerList/{date}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DrawResponse>> getWinnerListByDate(@PathVariable("date") String date) {
+        List<DrawResponse> winnerWagerResponse = pointPlayService.getWinnerListByDate(date);
         return ResponseEntity
                 .ok()
                 .body(winnerWagerResponse);

@@ -231,12 +231,34 @@ public class PointPlayService {
             if (Objects.isNull(winnerDetails)) {
                 throw new ResourceNotFoundException("invalid draw time or result is not calculated yet", 28);
             }
-            DrawResponse wagerWinnerResponse = new DrawResponse();
-            wagerWinnerResponse.setDrawTime(winnerDetails.getDrawTime());
-            Map<String, String> winner = objectMapper.readValue(winnerDetails.getWinnerPoint(), new TypeReference<Map<String, String>>() {
-            });
-            wagerWinnerResponse.setWinnerNumber(winner.keySet().stream().map(val -> Integer.parseInt(val)).collect(Collectors.toList()));
-            wagerWinnerResponse.setDate(winnerDetails.getCreationTime().toString());
+            return getDrawResponse(winnerDetails);
+        } catch (Exception e) {
+            log.error("problem is parsing the JSON or pasrsing errror", e);
+            throw new ResourceNotFoundException(e.getMessage(), 29);
+        }
+
+    }
+
+    private DrawResponse getDrawResponse(WinnerPointDetails winnerDetails) throws JsonProcessingException {
+        DrawResponse wagerWinnerResponse = new DrawResponse();
+        wagerWinnerResponse.setDrawTime(winnerDetails.getDrawTime());
+        Map<String, String> winner = objectMapper.readValue(winnerDetails.getWinnerPoint(), new TypeReference<Map<String, String>>() {
+        });
+        wagerWinnerResponse.setWinnerNumber(winner.keySet().stream().map(val -> Integer.parseInt(val)).collect(Collectors.toList()));
+        wagerWinnerResponse.setDate(winnerDetails.getCreationTime().toString());
+        return wagerWinnerResponse;
+    }
+
+    public List<DrawResponse> getWinnerListByDate(String date) {
+        try {
+            List<WinnerPointDetails> winnerDetails = winnerPointRepository.findByCreationTime(getDate(date));
+            if (Objects.isNull(winnerDetails)) {
+                throw new ResourceNotFoundException("invalid draw time or result is not calculated yet", 28);
+            }
+            List<DrawResponse> wagerWinnerResponse = new ArrayList<>();
+            for (WinnerPointDetails winnerDetail : winnerDetails) {
+                wagerWinnerResponse.add(getDrawResponse(winnerDetail));
+            }
             return wagerWinnerResponse;
         } catch (Exception e) {
             log.error("problem is parsing the JSON or pasrsing errror", e);

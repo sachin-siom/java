@@ -56,7 +56,7 @@ public class AdminController {
     public ResponseEntity<List<Retailer>> getAllRetailers() {
         List<Retailer> reatilerDetails = null;
         try {
-            reatilerDetails = retailerRepository.selectRetailers("1");
+            reatilerDetails = retailerRepository.selectRetailersExcept("1");
         } catch (Exception e) {
             log.error("there is issue while fetching user details: ", e);
         }

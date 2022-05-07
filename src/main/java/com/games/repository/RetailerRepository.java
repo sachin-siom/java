@@ -9,7 +9,6 @@ import javax.persistence.LockModeType;
 import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public interface RetailerRepository extends JpaRepository<Retailer, String>  {
@@ -28,5 +27,5 @@ public interface RetailerRepository extends JpaRepository<Retailer, String>  {
     void updateBalance(double balance, String retailId);
 
     @Query("Select r from Retailer r where r.retailId !=:retailId ")
-    List<Retailer> selectRetailers(String retailId);
+    List<Retailer> selectRetailersExcept(String retailId);
 }

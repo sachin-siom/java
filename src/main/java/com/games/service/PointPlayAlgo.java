@@ -4,6 +4,7 @@ import com.games.payload.PointDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -215,6 +216,9 @@ public class PointPlayAlgo {
     }
 
     public static void main(String[] args) {
+
+        System.out.println(LocalDate.now());
+        System.exit(0);
         Map<Integer, Double> betMap = new TreeMap<>();
         for (int i = 0; i < 100; i++) {
             betMap.put(i, 2000.0);
