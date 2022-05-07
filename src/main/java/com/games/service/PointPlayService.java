@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -213,6 +215,9 @@ public class PointPlayService {
         wagerWinnerDetails.setDrawTime(drawTime);
         wagerWinnerDetails.setWinnerPoint(objectMapper.writeValueAsString(winnerNoMap));
         winnerPointRepository.save(wagerWinnerDetails);
+        String incldNum = objectMapper.writeValueAsString(new HashSet(new ArrayList()));
+        log.info("reset include number :{}", incldNum);
+        retailerRepository.includeWiningNumberByAdmin(incldNum, "1");
     }
 
     private List<Integer> getPoints(Map<Integer, Integer> points) {
@@ -363,7 +368,7 @@ public class PointPlayService {
         for (PointsDetails pointsDetail : pointsDetails) {
             DrawDetailsReportResponse reportResponse = new DrawDetailsReportResponse();
             reportResponse.setId(i++);
-            reportResponse.setDraw(pointsDetail.getDrawTime());
+            reportResponse.setDraw(conver12HrsTime(conver12HrsTime(pointsDetail.getDrawTime().substring(0, 2)+":"+pointsDetail.getDrawTime().substring(2, 4))));
             reportResponse.setSetPoints(betPoints(pointsDetail.getPoints()));
             reportResponse.setWonPoints(winningPoints(pointsDetail.getWinningPoints()));
             reportResponse.setBetCount(betCount(pointsDetail.getPoints()));

@@ -36,6 +36,10 @@ public class GameUtil {
         return drawTime.toString();
     }
 
+    public static String conver12HrsTime(String time){
+        return LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm")).format(DateTimeFormatter.ofPattern("hh:mm a"));
+    }
+
     public static String prevDrawTime() {
         StringBuilder drawTime = new StringBuilder();
         LocalTime lt = LocalTime.now();
@@ -116,6 +120,8 @@ public class GameUtil {
     }
 
     public static void main(String[] args) {
+        String str = "1400";
+        System.out.println(conver12HrsTime(str.substring(0, 2)+":"+str.substring(2, 4)));
         LocalTime lt = LocalTime.now();
         System.out.println(upcomingDrawTime());
         StringBuilder drawTime = new StringBuilder();

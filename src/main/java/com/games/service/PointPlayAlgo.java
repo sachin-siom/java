@@ -61,7 +61,7 @@ public class PointPlayAlgo {
         log.info("3. finalWinnerMap:{}", finalWinnerMap);
         // add missed number doesnot care about distribute money variable
         missedNum(finalWinnerMap, NUMBERS, betMap);
-        log.info("4. finalWinnerMap:{}", finalWinnerMap);
+        //log.info("4. finalWinnerMap:{}", finalWinnerMap);
         log.info("--------------- winner List num & winner prize ---------------");
         printData(finalWinnerMap);
         return finalWinnerMap;
