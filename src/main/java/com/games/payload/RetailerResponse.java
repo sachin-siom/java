@@ -20,5 +20,6 @@ public class RetailerResponse {
     private boolean status;
     private String macAddress;
     private String includeNumbers;
+    private String profitPercentage;
     private LocalDateTime creationTime;
 }

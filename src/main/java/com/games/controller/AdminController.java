@@ -73,7 +73,8 @@ public class AdminController {
             Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.get().getRetailId())));
             if(isEnabled.isPresent()){
                 RetailerResponse retailerResponse = RetailerResponse.builder().retailId(retailer.get().getRetailId()).balance(retailer.get().getBalance())
-                        .username(retailer.get().getUsername()).macAddress(isEnabled.get().getMacAddress()).includeNumbers(retailer.get().getIncludeNumbers()).build();
+                        .username(retailer.get().getUsername()).macAddress(isEnabled.get().getMacAddress()).includeNumbers(retailer.get().getIncludeNumbers()).
+                        profitPercentage(String.valueOf(retailer.get().getProfitPercentage())).build();
                 return new ResponseEntity(retailerResponse, HttpStatus.OK);
             }
         } catch (Exception e) {
@@ -158,11 +159,11 @@ public class AdminController {
     }
 
     @PostMapping("/manageRetailer/changepassword/{retailId}")
-    public ResponseEntity<String> changepassword(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String newPassowrd) {
+    public ResponseEntity<String> changepassword(@PathVariable String retailId, @RequestBody @NotBlank @NotNull RetailerPassword newPassowrd) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
             log.info("password:{}", newPassowrd);
-            userServiceRepository.updateUserPassword(bCryptPasswordEncoder.encode(newPassowrd), Long.parseLong(retailId));
+            userServiceRepository.updateUserPassword(bCryptPasswordEncoder.encode(newPassowrd.getPassword()), Long.parseLong(retailId));
         } else {
             throw new ResourceNotFoundException("Retailid not exists", 7);
         }
@@ -176,11 +177,11 @@ public class AdminController {
     }
 
     @PostMapping("/manageRetailer/updateProfitPercentage/{retailId}")
-    public ResponseEntity<String> updateProfitPercentage(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String profitPercentage) {
+    public ResponseEntity<String> updateProfitPercentage(@PathVariable String retailId, @RequestBody @NotBlank @NotNull PercentagePayload profitPercentage) {
         Optional<Retailer> retailer = retailerRepository.findById(retailId);
         if (retailer.isPresent()) {
             retailerRepository.save(Retailer.builder().retailId(retailer.get().getRetailId()).username(retailer.get().getUsername())
-                    .balance(retailer.get().getBalance()).profitPercentage(Double.parseDouble(profitPercentage)).build());
+                    .balance(retailer.get().getBalance()).includeNumbers(retailer.get().getIncludeNumbers()).profitPercentage(Double.parseDouble(profitPercentage.getProfitPercentage())).build());
         } else {
             throw new ResourceNotFoundException("Retailid not exists", 12);
         }
