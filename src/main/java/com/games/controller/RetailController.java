@@ -68,7 +68,7 @@ public class RetailController {
                 .body(winnerWagerResponse);
     }
 
-    @GetMapping(value = "/winnerList/{date}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/winnerListByDate/{date}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DrawResponse>> getWinnerListByDate(@PathVariable("date") String date) {
         List<DrawResponse> winnerWagerResponse = pointPlayService.getWinnerListByDate(date);
         return ResponseEntity
