@@ -393,9 +393,9 @@ public class PointPlayService {
             RetailerTicketsReportResponse reportResponse = new RetailerTicketsReportResponse();
             reportResponse.setId(i++);
             reportResponse.setRetailerId(pointsDetail.getRetailId());
-            reportResponse.setDraw(pointsDetail.getDrawTime());
+            reportResponse.setDraw(conver12HrsTime(pointsDetail.getDrawTime().substring(0, 2)+":"+pointsDetail.getDrawTime().substring(2, 4)));
             reportResponse.setTicketid(pointsDetail.getTicketId());
-            reportResponse.setClaimed(Objects.nonNull(pointsDetail.getIsClaimed()) && pointsDetail.getIsClaimed() == 1);
+            reportResponse.setClaimed(Objects.nonNull(pointsDetail.getIsClaimed()) && (pointsDetail.getIsClaimed() == 1) ? "Yes": "No");
             reportResponse.setClaimedTime(Objects.isNull(pointsDetail.getIsClaimedTime()) ? "" : pointsDetail.getIsClaimedTime().toString());
             reportResponse.setSetPoints(betPoints(pointsDetail.getPoints()));
             reportResponse.setWonPoints(winningPoints(pointsDetail.getWinningPoints()));

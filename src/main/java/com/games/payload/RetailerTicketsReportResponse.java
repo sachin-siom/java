@@ -10,6 +10,6 @@ public class RetailerTicketsReportResponse {
     private String ticketid;
     private int setPoints;
     private double wonPoints;
-    private boolean claimed;
+    private String claimed;
     private String claimedTime;
 }
