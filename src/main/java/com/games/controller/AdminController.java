@@ -89,11 +89,16 @@ public class AdminController {
         Set<Retailer> reatilerDetails = retailerRepository.findAll().stream().collect(Collectors.toSet());
         List<RetailerResponse> response = new ArrayList<>();
         for (Retailer retailer : reatilerDetails) {
+            if(retailer.getRetailId().equals("1")){
+                continue;
+            }
             try {
                 Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.getRetailId())));
                 if (isEnabled.isPresent()) {
                     response.add(RetailerResponse.builder().retailId(retailer.getRetailId()).balance(retailer.getBalance())
-                            .status(isEnabled.get().isEnabled()).username(retailer.getUsername()).macAddress(isEnabled.get().getMacAddress()).includeNumbers(retailer.getIncludeNumbers()).build());
+                            .status(isEnabled.get().isEnabled()).profitPercentage(String.valueOf(retailer.getProfitPercentage()))
+                            .username(retailer.getUsername()).macAddress(isEnabled.get().getMacAddress())
+                            .includeNumbers(retailer.getIncludeNumbers()).build());
                 }
             } catch (Exception e) {
                 log.error("there is issue while fetching user details: ", e);
@@ -194,11 +199,11 @@ public class AdminController {
     }
 
     @PostMapping("/checkMac/{retailId}")
-    public ResponseEntity<AuthenticationBean> checkMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
+    public ResponseEntity<AuthenticationBean> checkMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull MACAddressPayload macPayload) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
-            if(Objects.nonNull(user.get().getMacAddress()) && Objects.nonNull(macAddress)){
-                if(user.get().getMacAddress().equals(macAddress)) {
+            if(Objects.nonNull(user.get().getMacAddress()) && Objects.nonNull(macPayload.getMacAddress())){
+                if(user.get().getMacAddress().equals(macPayload.getMacAddress())) {
                     return new ResponseEntity<>(new AuthenticationBean("Mac address validation are successful"), HttpStatus.OK);
                 }
             }
@@ -209,11 +214,11 @@ public class AdminController {
     }
 
     @PostMapping("/registerMac/{retailId}")
-    public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull String macAddress) {
+    public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull MACAddressPayload macPayload) {
         Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
         if (user.isPresent()) {
-            if(Objects.nonNull(macAddress)) {
-                user.get().setMacAddress(macAddress);
+            if(Objects.nonNull(macPayload)) {
+                user.get().setMacAddress(macPayload.getMacAddress());
                 userServiceRepository.save(user.get());
                 return new ResponseEntity<>(new AuthenticationBean("Mac registration is successful "), HttpStatus.OK);
             }
