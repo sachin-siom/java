@@ -368,7 +368,7 @@ public class PointPlayService {
         for (PointsDetails pointsDetail : pointsDetails) {
             DrawDetailsReportResponse reportResponse = new DrawDetailsReportResponse();
             reportResponse.setId(i++);
-            reportResponse.setDraw(conver12HrsTime(conver12HrsTime(pointsDetail.getDrawTime().substring(0, 2)+":"+pointsDetail.getDrawTime().substring(2, 4))));
+            reportResponse.setDraw(conver12HrsTime(pointsDetail.getDrawTime().substring(0, 2)+":"+pointsDetail.getDrawTime().substring(2, 4)));
             reportResponse.setSetPoints(betPoints(pointsDetail.getPoints()));
             reportResponse.setWonPoints(winningPoints(pointsDetail.getWinningPoints()));
             reportResponse.setBetCount(betCount(pointsDetail.getPoints()));
