@@ -53,14 +53,14 @@ public class AdminController {
     }
 
     @GetMapping("/onlyRetailerIds")
-    public ResponseEntity<List<Retailer>> getAllRetailers() {
-        List<Retailer> reatilerDetails = null;
+    public ResponseEntity<List<User>> getAllRetailers() {
+        List<User> userList = null;
         try {
-            reatilerDetails = retailerRepository.selectRetailersExcept("1");
+            userList = userServiceRepository.selectUsersExcept(1l);
         } catch (Exception e) {
             log.error("there is issue while fetching user details: ", e);
         }
-        return new ResponseEntity(reatilerDetails, HttpStatus.OK);
+        return new ResponseEntity(userList, HttpStatus.OK);
     }
 
     @GetMapping("/retailer/{retailId}")

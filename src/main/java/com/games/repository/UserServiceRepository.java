@@ -1,5 +1,6 @@
 package com.games.repository;
 
+import com.games.model.Retailer;
 import com.games.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,4 +28,7 @@ public interface UserServiceRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query("update User u set u.isEnabled =:isEnabled where u.id =:id")
     void enabledRetailer(boolean isEnabled, long id);
+
+    @Query("Select u from User u where u.id !=:id ")
+    List<User> selectUsersExcept(Long id);
 }
