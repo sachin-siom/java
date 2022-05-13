@@ -119,6 +119,7 @@ public class GameUtil {
         return LocalDate.now().toString();
     }
 
+
     public static void main(String[] args) {
         String str = "1400";
         System.out.println(conver12HrsTime(str.substring(0, 2)+":"+str.substring(2, 4)));

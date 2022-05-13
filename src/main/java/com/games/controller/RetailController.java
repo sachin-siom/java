@@ -1,10 +1,7 @@
 package com.games.controller;
 
 import com.games.exception.ResourceNotFoundException;
-import com.games.payload.DrawResponse;
-import com.games.payload.PointPlayRequest;
-import com.games.payload.PointPlayResponse;
-import com.games.payload.PointWinnerResponse;
+import com.games.payload.*;
 import com.games.service.PointPlayService;
 import com.games.service.PointTicketService;
 import lombok.extern.slf4j.Slf4j;
@@ -90,6 +87,11 @@ public class RetailController {
         return ResponseEntity
                 .ok()
                 .body(winnerWagerResponse);
+    }
+
+    @GetMapping("/basicAuth")
+    public ResponseEntity<AuthenticationBean> basicAuth() {
+        return new ResponseEntity<>(new AuthenticationBean("You are authenticated"), HttpStatus.OK);
     }
 
 }

@@ -3,6 +3,7 @@ package com.games.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.games.exception.ResourceNotFoundException;
 import com.games.model.Retailer;
+import com.games.model.RetailerAudit;
 import com.games.model.User;
 import com.games.payload.*;
 import com.games.repository.RetailerAuditRepository;
@@ -21,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -97,6 +99,29 @@ public class AdminController {
                 if (isEnabled.isPresent()) {
                     response.add(RetailerResponse.builder().retailId(retailer.getRetailId()).balance(retailer.getBalance())
                             .status(isEnabled.get().isEnabled()).profitPercentage(String.valueOf(retailer.getProfitPercentage()))
+                            .username(retailer.getUsername()).macAddress(isEnabled.get().getMacAddress())
+                            .includeNumbers(retailer.getIncludeNumbers()).build());
+                }
+            } catch (Exception e) {
+                log.error("there is issue while fetching user details: ", e);
+            }
+        }
+        return new ResponseEntity(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/AdminPortalRetailers")
+    public ResponseEntity<List<RetailerPortalResponse>> getAdminPortalRetailers() {
+        Set<Retailer> reatilerDetails = retailerRepository.findAll().stream().collect(Collectors.toSet());
+        List<RetailerPortalResponse> response = new ArrayList<>();
+        for (Retailer retailer : reatilerDetails) {
+            if(retailer.getRetailId().equals("1")){
+                continue;
+            }
+            try {
+                Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.getRetailId())));
+                if (isEnabled.isPresent()) {
+                    response.add(RetailerPortalResponse.builder().retailId(retailer.getRetailId()).balance(retailer.getBalance())
+                            .status(isEnabled.get().isEnabled()?"Activated":"De-Activated").profitPercentage(String.valueOf(retailer.getProfitPercentage()))
                             .username(retailer.getUsername()).macAddress(isEnabled.get().getMacAddress())
                             .includeNumbers(retailer.getIncludeNumbers()).build());
                 }
@@ -228,4 +253,15 @@ public class AdminController {
         return new ResponseEntity<>(new AuthenticationBean("Invalid mac address or retail id"), HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping("/lastXTxn/{retailId}/{limit}")
+    public ResponseEntity<LastXTxn> lastXTxn(@PathVariable String retailId, @PathVariable String limit) {
+        List<RetailerAudit> retailerAudit = retailerAuditRepository.getLastXtxn(retailId, Integer.parseInt(limit) );
+        if (Objects.nonNull(retailerAudit)) {
+            AtomicInteger i = new AtomicInteger(1);
+            List<LastXTxn> txnIds = retailerAudit.stream().map(audit -> new LastXTxn(i.getAndIncrement(), audit.getAmount(), audit.getCreationTime())).collect(Collectors.toList());
+            return new ResponseEntity(txnIds, HttpStatus.OK);
+        } else {
+            throw new ResourceNotFoundException("Retailid audit not exists", 103);
+        }
+    }
 }
