@@ -1,19 +1,27 @@
 package com.games.controller;
 
 import com.games.exception.ResourceNotFoundException;
+import com.games.model.Retailer;
 import com.games.model.RetailerDailyReport;
+import com.games.model.User;
 import com.games.payload.*;
+import com.games.repository.RetailerAuditRepository;
 import com.games.repository.RetailerRepository;
+import com.games.repository.UserServiceRepository;
 import com.games.service.CommissionService;
 import com.games.service.PointPlayService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAmount;
@@ -32,6 +40,18 @@ public class CommonController {
 
     @Autowired
     private CommissionService commissionService;
+
+    @Autowired
+    private RetailerAuditRepository retailerAuditRepository;
+
+    @Autowired
+    private UserServiceRepository userServiceRepository;
+
+    @Autowired
+    private PasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private RetailerRepository retailerRepository;
 
     @GetMapping("/hello")
     public ResponseEntity<String> hello(){

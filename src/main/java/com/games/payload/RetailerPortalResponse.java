@@ -14,6 +14,7 @@ public class RetailerPortalResponse {
     private double balance;
     private boolean isAdmin;
     private String status;
+    private String live;
     private String macAddress;
     private String includeNumbers;
     private String profitPercentage;

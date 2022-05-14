@@ -65,27 +65,6 @@ public class AdminController {
         return new ResponseEntity(userList, HttpStatus.OK);
     }
 
-    @GetMapping("/retailer/{retailId}")
-    public ResponseEntity<Retailer> getRetailer(@PathVariable String retailId) {
-        if(Objects.isNull(retailId) || StringUtils.isEmpty(retailId)){
-            throw new ResourceNotFoundException("retailid can not be empty or null", 1);
-        }
-        try {
-            Optional<Retailer> retailer = retailerRepository.findById(retailId);
-            Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.get().getRetailId())));
-            if(isEnabled.isPresent()){
-                RetailerResponse retailerResponse = RetailerResponse.builder().retailId(retailer.get().getRetailId()).balance(retailer.get().getBalance())
-                        .username(retailer.get().getUsername()).macAddress(isEnabled.get().getMacAddress()).includeNumbers(retailer.get().getIncludeNumbers()).
-                        profitPercentage(String.valueOf(retailer.get().getProfitPercentage())).build();
-                return new ResponseEntity(retailerResponse, HttpStatus.OK);
-            }
-        } catch (Exception e) {
-            log.error("there is issue while fetching retailer details: ", e);
-            throw new ResourceNotFoundException("retailid can not be empty or null or issue while fetching the details", 2);
-        }
-        return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
-    }
-
     @GetMapping("/retailers")
     public ResponseEntity<List<RetailerResponse>> getAllRetailer() {
         Set<Retailer> reatilerDetails = retailerRepository.findAll().stream().collect(Collectors.toSet());
@@ -109,7 +88,55 @@ public class AdminController {
         return new ResponseEntity(response, HttpStatus.OK);
     }
 
-    @GetMapping("/AdminPortalRetailers")
+    @GetMapping("/retailer/{retailId}")
+    public ResponseEntity<Retailer> getRetailer(@PathVariable String retailId) {
+        if(Objects.isNull(retailId) || StringUtils.isEmpty(retailId)){
+            throw new ResourceNotFoundException("retailid can not be empty or null", 1);
+        }
+        try {
+            Optional<Retailer> retailer = retailerRepository.findById(retailId);
+            Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.get().getRetailId())));
+            if(isEnabled.isPresent()){
+                RetailerResponse retailerResponse = RetailerResponse.builder().retailId(retailer.get().getRetailId()).balance(retailer.get().getBalance())
+                        .username(retailer.get().getUsername()).macAddress(isEnabled.get().getMacAddress()).includeNumbers(retailer.get().getIncludeNumbers()).
+                        profitPercentage(String.valueOf(retailer.get().getProfitPercentage())).build();
+                return new ResponseEntity(retailerResponse, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            log.error("there is issue while fetching retailer details: ", e);
+            throw new ResourceNotFoundException("retailid can not be empty or null or issue while fetching the details", 2);
+        }
+        return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/manageRetailer/changepassword/{retailId}")
+    public ResponseEntity<String> changePassword(@PathVariable String retailId, @RequestBody @NotBlank @NotNull RetailerPassword newPassowrd) {
+        Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
+        if (user.isPresent()) {
+            log.info("password:{}", newPassowrd);
+            userServiceRepository.updateUserPassword(bCryptPasswordEncoder.encode(newPassowrd.getPassword()), Long.parseLong(retailId));
+        } else {
+            throw new ResourceNotFoundException("Retailid not exists", 7);
+        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping("/registerMac/{retailId}")
+    public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull MACAddressPayload macPayload) {
+        Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
+        if (user.isPresent()) {
+            if(Objects.nonNull(macPayload)) {
+                user.get().setMacAddress(macPayload.getMacAddress());
+                userServiceRepository.save(user.get());
+                return new ResponseEntity<>(new AuthenticationBean("Mac registration is successful "), HttpStatus.OK);
+            }
+        } else {
+            throw new ResourceNotFoundException("Retailid not exists", 7);
+        }
+        return new ResponseEntity<>(new AuthenticationBean("Invalid mac address or retail id"), HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/adminPortalRetailers")
     public ResponseEntity<List<RetailerPortalResponse>> getAdminPortalRetailers() {
         Set<Retailer> reatilerDetails = retailerRepository.findAll().stream().collect(Collectors.toSet());
         List<RetailerPortalResponse> response = new ArrayList<>();
@@ -121,7 +148,7 @@ public class AdminController {
                 Optional<User> isEnabled = Optional.of(userServiceRepository.getById(Long.parseLong(retailer.getRetailId())));
                 if (isEnabled.isPresent()) {
                     response.add(RetailerPortalResponse.builder().retailId(retailer.getRetailId()).balance(retailer.getBalance())
-                            .status(isEnabled.get().isEnabled()?"Activated":"De-Activated").profitPercentage(String.valueOf(retailer.getProfitPercentage()))
+                            .status(isEnabled.get().isEnabled()?"Activated":"De-Activated").live(isEnabled.get().isEnabled()?"Live":"Offline").profitPercentage(String.valueOf(retailer.getProfitPercentage()))
                             .username(retailer.getUsername()).macAddress(isEnabled.get().getMacAddress())
                             .includeNumbers(retailer.getIncludeNumbers()).build());
                 }
@@ -188,18 +215,6 @@ public class AdminController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PostMapping("/manageRetailer/changepassword/{retailId}")
-    public ResponseEntity<String> changepassword(@PathVariable String retailId, @RequestBody @NotBlank @NotNull RetailerPassword newPassowrd) {
-        Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
-        if (user.isPresent()) {
-            log.info("password:{}", newPassowrd);
-            userServiceRepository.updateUserPassword(bCryptPasswordEncoder.encode(newPassowrd.getPassword()), Long.parseLong(retailId));
-        } else {
-            throw new ResourceNotFoundException("Retailid not exists", 7);
-        }
-        return new ResponseEntity(HttpStatus.OK);
-    }
-
     @PostMapping("/manageRetailer/updateBalance/{retailId}")
     public ResponseEntity<String> updateBalance(@PathVariable String retailId, @RequestBody @NotBlank @NotNull RetailerBalance balance) {
         adminService.manageUser(retailId, balance);
@@ -236,21 +251,6 @@ public class AdminController {
             throw new ResourceNotFoundException("Retailid not exists", 7);
         }
         return new ResponseEntity<>(new AuthenticationBean("Invalid mac address"), HttpStatus.BAD_REQUEST);
-    }
-
-    @PostMapping("/registerMac/{retailId}")
-    public ResponseEntity<AuthenticationBean> registerMac(@PathVariable String retailId, @RequestBody @NotBlank @NotNull MACAddressPayload macPayload) {
-        Optional<User> user = userServiceRepository.findById(Long.parseLong(retailId));
-        if (user.isPresent()) {
-            if(Objects.nonNull(macPayload)) {
-                user.get().setMacAddress(macPayload.getMacAddress());
-                userServiceRepository.save(user.get());
-                return new ResponseEntity<>(new AuthenticationBean("Mac registration is successful "), HttpStatus.OK);
-            }
-        } else {
-            throw new ResourceNotFoundException("Retailid not exists", 7);
-        }
-        return new ResponseEntity<>(new AuthenticationBean("Invalid mac address or retail id"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/lastXTxn/{retailId}/{limit}")
