@@ -29,6 +29,6 @@ public interface UserServiceRepository extends JpaRepository<User, Long> {
     @Query("update User u set u.isEnabled =:isEnabled where u.id =:id")
     void enabledRetailer(boolean isEnabled, long id);
 
-    @Query("Select u from User u where u.id !=:id ")
-    List<User> selectUsersExcept(Long id);
+    @Query("Select u from User u where u.id not in ?1 ")
+    List<User> selectUsersExcept(List<Long> id);
 }

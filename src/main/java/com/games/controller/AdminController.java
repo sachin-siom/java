@@ -54,11 +54,13 @@ public class AdminController {
         return new ResponseEntity<>("Hello admin page", HttpStatus.OK);
     }
 
+    List<Long> ids = Arrays.asList(0l,1l);
+
     @GetMapping("/onlyRetailerIds")
     public ResponseEntity<List<User>> getAllRetailers() {
         List<User> userList = null;
         try {
-            userList = userServiceRepository.selectUsersExcept(1l);
+            userList = userServiceRepository.selectUsersExcept(ids);
         } catch (Exception e) {
             log.error("there is issue while fetching user details: ", e);
         }
@@ -70,7 +72,7 @@ public class AdminController {
         Set<Retailer> reatilerDetails = retailerRepository.findAll().stream().collect(Collectors.toSet());
         List<RetailerResponse> response = new ArrayList<>();
         for (Retailer retailer : reatilerDetails) {
-            if(retailer.getRetailId().equals("1")){
+            if(retailer.getRetailId().equals("1") || retailer.getRetailId().equals("0")){
                 continue;
             }
             try {
