@@ -143,7 +143,7 @@ public class AdminController {
         Set<Retailer> reatilerDetails = retailerRepository.findAll().stream().collect(Collectors.toSet());
         List<RetailerPortalResponse> response = new ArrayList<>();
         for (Retailer retailer : reatilerDetails) {
-            if(retailer.getRetailId().equals("1")){
+            if(retailer.getRetailId().equals("1") || retailer.getRetailId().equals("0")){
                 continue;
             }
             try {
