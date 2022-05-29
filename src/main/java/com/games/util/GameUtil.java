@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -121,7 +123,7 @@ public class GameUtil {
 
 
     public static void main(String[] args) {
-        String str = "1400";
+        /*String str = "1400";
         System.out.println(conver12HrsTime(str.substring(0, 2)+":"+str.substring(2, 4)));
         LocalTime lt = LocalTime.now();
         System.out.println(upcomingDrawTime());
@@ -132,7 +134,41 @@ public class GameUtil {
         System.out.println(LocalDateTime.now().toString());
 
         System.out.println(atStartOfDay("2022-03-07"));
-        System.out.println(atEndOfDay("2022-03-07"));
+        System.out.println(atEndOfDay("2022-03-07"));*/
+        getLowHigh(1234);
+        getLowHigh(9999);
+        getLowHigh(123);
+        getLowHigh(12);
+        getLowHigh(1);
+    }
+
+    public static List<Integer> getLowHigh(int num){
+        int low = 0;
+        int high = 0;
+        switch (checkNoOfDigit(num)){
+            case 4:
+                low = Integer.valueOf(String.valueOf(num).substring(0, 2) +"01");
+                high = Integer.valueOf(String.valueOf(num).substring(0, 2) +"99") + 1;
+                break;
+            case 3:
+                low = Integer.valueOf(String.valueOf(num).substring(0, 1) +"01");
+                high = Integer.valueOf(String.valueOf(num).substring(0, 1) +"99") + 1;
+                break;
+            case 2:
+                low = Integer.valueOf(String.valueOf(num).substring(0, 0) +"01");
+                high = Integer.valueOf(String.valueOf(num).substring(0, 0) +"99") + 1;
+                break;
+            case 1:
+                low = Integer.valueOf(String.valueOf(num).substring(0, 0) +"01");
+                high = Integer.valueOf(String.valueOf(num).substring(0, 0) +"99") + 1;
+                break;
+            case 0:
+        }
+        return Arrays.asList(low,high);
+    }
+
+    private static int checkNoOfDigit(Integer num) {
+        return String.valueOf(num).length();
     }
 
 }
