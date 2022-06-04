@@ -1,5 +1,6 @@
 package com.games.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.games.payload.DrawOpenResponse;
 import com.games.payload.DrawResponse;
 import com.games.service.PointPlayService;
@@ -23,6 +24,9 @@ public class OpenController {
     @Autowired
     private PointPlayService pointPlayService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     private  Map<String, List<Integer>> getMapStatic() {
         Map<String, List<Integer>> result = new HashMap<>();
@@ -42,7 +46,7 @@ public class OpenController {
     }
 
     @GetMapping(value = "/winnerListByDate", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DrawOpenResponse>> getWinnerListByDate() {
+    public ResponseEntity<List<DrawOpenResponse>> getWinnerListByDate() throws Exception{
         List<DrawResponse> winnerWagerResponse = pointPlayService.getWinnerListByDate(currentDate());
         List<DrawOpenResponse> drawOpenResponses = new ArrayList<>();
         for (DrawResponse response : winnerWagerResponse) {
@@ -83,6 +87,35 @@ public class OpenController {
         return ResponseEntity
                 .ok()
                 .body(winnerWagerResponse);
+    }
+
+    @GetMapping(value = "/winnerListByDateNew1", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> getWinnerListByDateNew1() throws Exception {
+        List<Map<String, Object>> response1 = new ArrayList<>();
+        List<DrawResponse> winnerWagerResponse = pointPlayService.getWinnerListByDate(currentDate());
+        for (DrawResponse res : winnerWagerResponse) {
+            Map<String, Object> winningNumbers = new HashMap<>();
+            winningNumbers.put("drawTime", conver12HrsTime(res.getDrawTime().substring(0, 2) + ":" + res.getDrawTime().substring(2, 4)));
+            for (Integer num : res.getWinnerNumber()) {
+                List<Integer> lowHigh = getLowHigh(num);
+                int low = lowHigh.get(0);
+                int high = lowHigh.get(1);
+                if (Objects.isNull(winningNumbers.get(getKey(low, high)))) {
+                    List<Integer> winner = new ArrayList<>();
+                    winner.add(num);
+                    winningNumbers.put(getKey(low, high), winner);
+                } else {
+                    List<Integer> winner = (List<Integer>) winningNumbers.get(getKey(low, high));
+                    winner.add(num);
+                    winningNumbers.put(getKey(low, high), winner);
+                }
+            }
+            winningNumbers.put("date", res.getDate());
+            response1.add(winningNumbers);
+        }
+        return ResponseEntity
+                .ok()
+                .body(response1);
     }
 
     private int checkNoOfDigit(Integer num) {
