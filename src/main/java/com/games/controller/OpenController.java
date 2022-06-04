@@ -38,7 +38,7 @@ public class OpenController {
     }
 
     private static String getKey(int low, int high) {
-        return low + "_" + high;
+        return "_"+low + "_" + high;
     }
 
     @GetMapping(value = "/winnerListByDate", produces = MediaType.APPLICATION_JSON_VALUE)
