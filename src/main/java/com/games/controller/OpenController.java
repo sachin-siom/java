@@ -18,6 +18,7 @@ import static com.games.util.GameUtil.*;
 @Slf4j
 @RestController
 @RequestMapping("/open")
+@CrossOrigin(origins = {"${settings.cors_origin}", "${settings.cors_origin.localhost}"})
 public class OpenController {
     @Autowired
     private PointPlayService pointPlayService;
