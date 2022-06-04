@@ -72,6 +72,18 @@ public class OpenController {
                 .body(drawOpenResponses);
     }
 
+    @GetMapping(value = "/winnerListByDateNew", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DrawResponse>> getWinnerListByDateNew() {
+        List<DrawResponse> winnerWagerResponse = pointPlayService.getWinnerListByDate(currentDate());
+        for (DrawResponse response : winnerWagerResponse) {
+            response.setDrawTime(conver12HrsTime(response.getDrawTime().substring(0, 2)+":"+response.getDrawTime().substring(2, 4)));
+            Collections.sort(response.getWinnerNumber());
+        }
+        return ResponseEntity
+                .ok()
+                .body(winnerWagerResponse);
+    }
+
     private int checkNoOfDigit(Integer num) {
         return String.valueOf(num).length();
     }
