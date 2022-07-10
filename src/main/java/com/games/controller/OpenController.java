@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.games.payload.DrawOpenResponse;
 import com.games.payload.DrawResponse;
 import com.games.service.PointPlayService;
+import com.sun.xml.bind.marshaller.Messages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.games.util.GameUtil.*;
 
@@ -55,7 +55,7 @@ public class OpenController {
             openResponse.setDrawTime(conver12HrsTime(response.getDrawTime().substring(0, 2)+":"+response.getDrawTime().substring(2, 4)));
             for (Integer num : response.getWinnerNumber()) {
                 List<Integer> lowHigh = getLowHigh(num);
-                int noOfDigit = checkNoOfDigit(num);
+                String noOfDigit = checkNoOfDigit(num);
                 int low = lowHigh.get(0);
                 int high = lowHigh.get(1);
                 if(Objects.isNull(winningNumbers.get(getKey(low, high)))) {
@@ -101,12 +101,12 @@ public class OpenController {
                 int low = lowHigh.get(0);
                 int high = lowHigh.get(1);
                 if (Objects.isNull(winningNumbers.get(getKey(low, high)))) {
-                    List<Integer> winner = new ArrayList<>();
-                    winner.add(num);
+                    List<String> winner = new ArrayList<>();
+                    winner.add(appendZero(num));
                     winningNumbers.put(getKey(low, high), winner);
                 } else {
-                    List<Integer> winner = (List<Integer>) winningNumbers.get(getKey(low, high));
-                    winner.add(num);
+                    List<String> winner = (List<String>) winningNumbers.get(getKey(low, high));
+                    winner.add(appendZero(num));
                     winningNumbers.put(getKey(low, high), winner);
                 }
             }
@@ -118,7 +118,12 @@ public class OpenController {
                 .body(response1);
     }
 
-    private int checkNoOfDigit(Integer num) {
-        return String.valueOf(num).length();
+    private String appendZero(Integer num) {
+        return String.valueOf(String.format("%04d", num));
+    }
+
+
+    private String checkNoOfDigit(Integer num) {
+        return appendZero(num);
     }
 }

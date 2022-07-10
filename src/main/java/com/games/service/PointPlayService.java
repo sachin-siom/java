@@ -135,6 +135,11 @@ public class PointPlayService {
 
 
     public void decideWinner(String drawTime) throws JsonProcessingException {
+        WinnerPointDetails byDrawTime = winnerPointRepository.getByDrawTime(drawTime);
+        if(Objects.nonNull(byDrawTime)){
+            log.info("by draw time: {} bydrawTime:{}", drawTime, byDrawTime);
+            return;
+        }
         String date = LocalDate.now().toString();
         List<PointsDetails> allBets = pointPlayRepository.getByDrawTime(drawTime, atStartOfDay(date), atEndOfDay(date));
         double collectionAmt = 0.0;

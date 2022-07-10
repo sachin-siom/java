@@ -10,6 +10,7 @@ import com.games.repository.RetailerAuditRepository;
 import com.games.repository.RetailerRepository;
 import com.games.repository.UserServiceRepository;
 import com.games.service.AdminService;
+import com.games.service.PointPlayService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,9 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    @Autowired
+    private PointPlayService pointPlayService;
+
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
         return new ResponseEntity<>("Hello admin page", HttpStatus.OK);
@@ -66,6 +70,17 @@ public class AdminController {
         }
         return new ResponseEntity(userList, HttpStatus.OK);
     }
+
+    @GetMapping("/runDraw/{drawTime}")
+    public ResponseEntity runDraw(String drawTime) {
+        try {
+            pointPlayService.decideWinner(drawTime);
+        } catch (Exception e) {
+            log.error("there is issue while fetching user details: ", e);
+        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
 
     @GetMapping("/retailers")
     public ResponseEntity<List<RetailerResponse>> getAllRetailer() {
