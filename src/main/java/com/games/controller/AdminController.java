@@ -72,7 +72,7 @@ public class AdminController {
     }
 
     @GetMapping("/runDraw/{drawTime}")
-    public ResponseEntity runDraw(String drawTime) {
+    public ResponseEntity runDraw(@PathVariable String drawTime) {
         try {
             pointPlayService.decideWinner(drawTime);
         } catch (Exception e) {
