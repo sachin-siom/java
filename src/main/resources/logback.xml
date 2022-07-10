@@ -31,12 +31,12 @@
         </rollingPolicy>
     </appender>
 
-    <root level="info">
-        <appender-ref ref="RollingFile" />
-    </root>
-
     <logger name="com.games" level="debug" additivity="false">
         <appender-ref ref="RollingFile" />
     </logger>
+
+    <root level="info">
+        <appender-ref ref="RollingFile" />
+    </root>
 
 </configuration>
