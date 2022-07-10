@@ -135,9 +135,9 @@ public class PointPlayService {
 
 
     public void decideWinner(String drawTime) throws JsonProcessingException {
-        WinnerPointDetails byDrawTime = winnerPointRepository.getByDrawTime(drawTime);
-        if(Objects.nonNull(byDrawTime)){
-            log.info("by draw time: {} bydrawTime:{}", drawTime, byDrawTime);
+        WinnerPointDetails winnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
+        if(Objects.nonNull(winnerDetails)){
+            log.info("drawn already, draw time: {} bydraw details:{}", drawTime, winnerDetails);
             return;
         }
         String date = LocalDate.now().toString();
