@@ -16,6 +16,7 @@ import com.games.repository.RetailerDailyReportRepository;
 import com.games.repository.RetailerRepository;
 import com.games.util.GameUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -114,13 +115,13 @@ public class CommissionService {
     public CommissionReportResponse commissionReport(List<PointsDetails> pointsDetails) {
         Map<String, CommissionResponse> responseHashMap = new HashMap<>();
         for (PointsDetails pointsDetail : pointsDetails) {
+            if(pointsDetail.isDeleted()) continue;
             CommissionResponse retailerData = responseHashMap.getOrDefault(pointsDetail.getRetailId(), new CommissionResponse());
             if(responseHashMap.containsKey(pointsDetail.getRetailId())){
                 retailerData.setPointsWon(getWinnerPoints(pointsDetail) + retailerData.getPointsWon());
                 retailerData.setTotalPointsPlayed(pointsDetail.getTotalPoints() + retailerData.getTotalPointsPlayed());
             } else {
                 retailerData.setRetailId(pointsDetail.getRetailId());
-                retailerData.setTotalPointsPlayed(pointsDetail.getTotalPoints());
                 retailerData.setPointsWon(getWinnerPoints(pointsDetail));
                 retailerData.setTotalPointsPlayed(pointsDetail.getTotalPoints());
             }
@@ -156,7 +157,7 @@ public class CommissionService {
             try {
                 winningDetails = objectMapper.readValue(pointsDetail.getWinningPoints(), WinningDetails.class);
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                log.error("getWinnerPoints, points details:{}", e);
             }
             return winningDetails.getWinningNums().values().stream().mapToDouble(i -> i).sum();
         }
