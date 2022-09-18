@@ -15,6 +15,7 @@ import com.games.repository.RetailerAuditRepository;
 import com.games.repository.RetailerDailyReportRepository;
 import com.games.repository.RetailerRepository;
 import com.games.util.GameUtil;
+import java.text.DecimalFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,14 +130,14 @@ public class CommissionService {
         }
         for (Map.Entry<String, CommissionResponse> entry : responseHashMap.entrySet()) {
             Retailer byId = retailerRepository.getById(entry.getKey());
-            Double commission = entry.getValue().getTotalPointsPlayed() * (byId.getProfitPercentage() / 100.0f);
+            Double commission = Math.round((entry.getValue().getTotalPointsPlayed() * (byId.getProfitPercentage() / 100.0f)) * 1000.0) / 1000.0;
             entry.getValue().setCommission(commission);
             entry.getValue().setCommissionPercentage((int)byId.getProfitPercentage());
             if(entry.getValue().getPointsWon() > 0.0){
-                double remainBal = subtract(entry.getValue().getTotalPointsPlayed(), entry.getValue().getPointsWon());
-                entry.getValue().setAdminProfit(subtract(remainBal, commission));
+                double remainBal = subtractCommission(entry.getValue().getTotalPointsPlayed(), entry.getValue().getPointsWon());
+                entry.getValue().setAdminProfit(subtractCommission(remainBal, commission));
             } else {
-                entry.getValue().setAdminProfit(subtract(entry.getValue().getTotalPointsPlayed(), commission));
+                entry.getValue().setAdminProfit(subtractCommission(entry.getValue().getTotalPointsPlayed(), commission));
             }
         }
         CommissionReportResponse reportResponse = new CommissionReportResponse();

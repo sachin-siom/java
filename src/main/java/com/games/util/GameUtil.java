@@ -2,6 +2,7 @@ package com.games.util;
 
 import com.games.model.Sequence;
 import com.games.repository.SequenceRepository;
+import java.math.RoundingMode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -63,6 +64,11 @@ public class GameUtil {
 
     public static double subtract(double a, double b) {
         BigDecimal c = BigDecimal.valueOf(a).subtract(BigDecimal.valueOf(b));
+        return c.doubleValue();
+    }
+
+    public static double subtractCommission(double a, double b) {
+        BigDecimal c = BigDecimal.valueOf(a).subtract(BigDecimal.valueOf(b)).setScale(2, RoundingMode.HALF_UP);
         return c.doubleValue();
     }
 
