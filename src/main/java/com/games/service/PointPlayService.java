@@ -265,11 +265,7 @@ public class PointPlayService {
             if (Objects.isNull(winnerDetails)) {
                 throw new ResourceNotFoundException("invalid draw time or result is not calculated yet", 28);
             }
-            log.info("winnerDetails before sort:{}",winnerDetails);
-            Collections.sort(winnerDetails, (o1, o2) -> o1.getDrawTime().compareTo(o2.getDrawTime()));
-            log.info("winnerDetails after 1 sort:{}",winnerDetails);
             Collections.sort(winnerDetails, (o1, o2) -> o2.getDrawTime().compareTo(o1.getDrawTime()));
-            log.info("winnerDetails after 2 sort:{}",winnerDetails);
             List<DrawResponse> wagerWinnerResponse = new ArrayList<>();
             for (WinnerPointDetails winnerDetail : winnerDetails) {
                 wagerWinnerResponse.add(getDrawResponse(winnerDetail));
