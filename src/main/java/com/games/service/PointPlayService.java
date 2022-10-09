@@ -269,6 +269,7 @@ public class PointPlayService {
             for (WinnerPointDetails winnerDetail : winnerDetails) {
                 wagerWinnerResponse.add(getDrawResponse(winnerDetail));
             }
+            Collections.sort(wagerWinnerResponse);
             return wagerWinnerResponse;
         } catch (Exception e) {
             log.error("problem is parsing the JSON or pasrsing errror", e);
@@ -306,6 +307,39 @@ public class PointPlayService {
             Retailer byId = retailerRepository.getById(pointsDetails.getRetailId());
             RetailerAudit audit = RetailerAudit.builder().retailId(pointsDetails.getRetailId()).ticketId(ticketId).
                     isCredit(1).creditor(Creditaor.USER.getVal()).amount(winningPrize).balance(winningPrize + byId.getBalance()).build();
+            retailerAuditRepository.save(audit);
+            retailerRepository.updateBalance(winningPrize, byId.getRetailId());
+            log.info("winning points details: {}", winningDetails);
+            pointsDetails.setIsClaimed(1);
+            pointsDetails.setIsClaimedTime(LocalDateTime.now());
+            pointsDetails = pointPlayRepository.save(pointsDetails);
+            return getPlayerResponse(pointsDetails);
+        } catch (Exception e) {
+            log.error("json parsing exception in claim winner ticketId:{}", ticketId, e);
+            throw new ResourceNotFoundException("JSON parsing exception in claim winner or ticket id not found", 35);
+        }
+    }
+
+    public PointWinnerResponse claimWinnerWithRetailId(String ticketId, String retailId) {
+        if (Objects.isNull(ticketId) || ticketId.isEmpty() || Objects.isNull(retailId) || retailId.isEmpty()) {
+            throw new ResourceNotFoundException("ticketId is empty or null", 32);
+        }
+        try {
+            PointsDetails pointsDetails = pointPlayRepository.getById(ticketId);
+            if (Objects.isNull(pointsDetails)) {
+                throw new ResourceNotFoundException("ticketId not found in system", 33);
+            }
+            if (Objects.isNull(pointsDetails.getWinningPoints())) {
+                throw new ResourceNotFoundException("no winning numbers found in the tickets", 34);
+            }
+            if (!pointsDetails.getRetailId().equals(retailId)) {
+                throw new ResourceNotFoundException("this ticket is not from the the current retailer: "+retailId +" actual retail id: "+pointsDetails.getRetailId(), 34);
+            }
+            WinningDetails winningDetails = objectMapper.readValue(pointsDetails.getWinningPoints(), WinningDetails.class);
+            double winningPrize = winningDetails.getWinningNums().values().stream().mapToDouble(i -> i).sum();
+            Retailer byId = retailerRepository.getById(pointsDetails.getRetailId());
+            RetailerAudit audit = RetailerAudit.builder().retailId(pointsDetails.getRetailId()).ticketId(ticketId).
+                isCredit(1).creditor(Creditaor.USER.getVal()).amount(winningPrize).balance(winningPrize + byId.getBalance()).build();
             retailerAuditRepository.save(audit);
             retailerRepository.updateBalance(winningPrize, byId.getRetailId());
             log.info("winning points details: {}", winningDetails);

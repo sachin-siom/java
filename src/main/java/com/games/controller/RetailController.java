@@ -89,6 +89,14 @@ public class RetailController {
                 .body(winnerWagerResponse);
     }
 
+    @GetMapping(value = "/claimWinnerNew/{ticketId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PointWinnerResponse> claimWinnerNew(@PathVariable("ticketId") String ticketId, @PathVariable("retailId") String retailId) {
+        PointWinnerResponse winnerWagerResponse = pointPlayService.claimWinnerWithRetailId(ticketId, retailId);
+        return ResponseEntity
+            .ok()
+            .body(winnerWagerResponse);
+    }
+
     @GetMapping("/basicAuth")
     public ResponseEntity<AuthenticationBean> basicAuth() {
         return new ResponseEntity<>(new AuthenticationBean("You are authenticated"), HttpStatus.OK);
