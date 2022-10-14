@@ -1,7 +1,11 @@
 package com.games.controller;
 
+import static com.games.util.GameUtil.upcomingDrawTime;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.games.exception.ResourceNotFoundException;
+import com.games.model.LoadResponse;
 import com.games.model.Retailer;
 import com.games.model.RetailerAudit;
 import com.games.model.User;
@@ -70,17 +74,6 @@ public class AdminController {
         }
         return new ResponseEntity(userList, HttpStatus.OK);
     }
-
-    @GetMapping("/runDraw/{drawTime}")
-    public ResponseEntity runDraw(@PathVariable String drawTime) {
-        try {
-            pointPlayService.decideWinner(drawTime);
-        } catch (Exception e) {
-            log.error("there is issue while fetching user details: ", e);
-        }
-        return new ResponseEntity(HttpStatus.OK);
-    }
-
 
     @GetMapping("/retailers")
     public ResponseEntity<List<RetailerResponse>> getAllRetailer() {
@@ -280,5 +273,27 @@ public class AdminController {
         } else {
             throw new ResourceNotFoundException("Retailid audit not exists", 103);
         }
+    }
+
+    @GetMapping("/runDraw/{drawTime}")
+    public ResponseEntity runDraw(@PathVariable String drawTime) {
+        try {
+            pointPlayService.decideWinner(drawTime);
+        } catch (Exception e) {
+            log.error("there is issue while fetching user details: ", e);
+        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @GetMapping("/load")
+    public ResponseEntity<LoadResponse> load()
+        throws JsonProcessingException {
+        return new ResponseEntity(pointPlayService.checkDrawLoad(upcomingDrawTime()),HttpStatus.OK);
+    }
+
+    @GetMapping("/load/{drawTime}")
+    public ResponseEntity<LoadResponse> loadCurrent(@PathVariable String drawTime)
+        throws JsonProcessingException {
+        return new ResponseEntity(pointPlayService.checkDrawLoad(drawTime),HttpStatus.OK);
     }
 }

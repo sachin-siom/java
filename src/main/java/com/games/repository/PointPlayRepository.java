@@ -23,4 +23,5 @@ public interface PointPlayRepository extends JpaRepository<PointsDetails, String
 
     @Query("SELECT p from PointsDetails p where p.drawTime = ?1 and p.creationTime between ?2 and ?3 ")
     List<PointsDetails> getByDrawTime(String drawTime, LocalDateTime startDateTime, LocalDateTime endDateTime);
+
 }

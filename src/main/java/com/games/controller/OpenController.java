@@ -55,7 +55,6 @@ public class OpenController {
             openResponse.setDrawTime(conver12HrsTime(response.getDrawTime().substring(0, 2)+":"+response.getDrawTime().substring(2, 4)));
             for (Integer num : response.getWinnerNumber()) {
                 List<Integer> lowHigh = getLowHigh(num);
-                String noOfDigit = checkNoOfDigit(num);
                 int low = lowHigh.get(0);
                 int high = lowHigh.get(1);
                 if(Objects.isNull(winningNumbers.get(getKey(low, high)))) {

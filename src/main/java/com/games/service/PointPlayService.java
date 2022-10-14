@@ -14,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,6 +131,36 @@ public class PointPlayService {
         pointPlayRepository.saveAndFlush(pointsDetails);
     }
 
+    public LoadResponse checkDrawLoad(String drawTime) throws JsonProcessingException {
+        log.debug("log tim: {}", drawTime);
+        double collectionAmt = 0.0;
+        String date = LocalDate.now().toString();
+        List<PointsDetails> allBets = pointPlayRepository.getByDrawTime(drawTime, atStartOfDay(date), atEndOfDay(date));
+        LoadResponse loadResponse = new LoadResponse();
+        Map<Integer, Load> betMap = new TreeMap<>();
+        for (PointsDetails bet : allBets) {
+            ArrayList<Points> betPoints = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
+            for (Points betPoint : betPoints) {
+                double winningAmt = MULTIPLIER * betPoint.getWinningMultiplier();
+                collectionAmt = collectionAmt + (betPoint.getPoints().values().stream().mapToInt(i -> i).sum() * betPoint.getPricePerPoint());
+                final List<Integer> betPointsList = getPoints(betPoint.getPoints());
+                for (Integer num : betPointsList) {
+                    if (betMap.containsKey(num)) {
+                        final Load load = betMap.get(num);
+                        load.setBetCount(load.getBetCount() + 1);
+                        load.setBetAmount(load.getBetAmount() + winningAmt);
+                        betMap.put(num, load);
+                    } else {
+                        betMap.put(num, new Load(num, 1, winningAmt));
+                    }
+                }
+            }
+        }
+        loadResponse.setLoadData(betMap);
+        loadResponse.setTotalCollectionAmt(collectionAmt);
+        return loadResponse;
+    }
 
     public void decideWinner(String drawTime) throws JsonProcessingException {
         WinnerPointDetails winnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
@@ -504,4 +532,5 @@ public class PointPlayService {
             throw new ResourceNotFoundException("issue in parsing json", 44);
         }
     }
+
 }
