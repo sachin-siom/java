@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -295,6 +296,14 @@ public class AdminController {
     public ResponseEntity<LoadResponse> loadCurrent(@PathVariable String drawTime)
         throws JsonProcessingException {
         return new ResponseEntity(pointPlayService.checkDrawLoadPast(drawTime),HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/checkWinner/{ticketId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PointWinnerResponse> checkWinner(@PathVariable("ticketId") String ticketId) {
+        PointWinnerResponse winnerWagerResponse = pointPlayService.checkWinner(ticketId);
+        return ResponseEntity
+            .ok()
+            .body(winnerWagerResponse);
     }
 
 }
