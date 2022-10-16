@@ -157,7 +157,8 @@ public class PointPlayService {
                 }
             }
         }
-        loadResponse.setLoadData(betMap);
+        final Set<Load> set = new TreeSet(betMap.values());
+        loadResponse.setLoadData(set);
         loadResponse.setTotalCollectionAmt(collectionAmt);
         return loadResponse;
     }
