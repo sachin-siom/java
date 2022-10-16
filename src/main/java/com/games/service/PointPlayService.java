@@ -151,11 +151,12 @@ public class PointPlayService {
                         load.setBetCount(load.getBetCount() + 1);
                         load.setBetAmount(load.getBetAmount() + winningAmt);
                         load.getBetTicketIds().add(bet.getTicketId());
+                        load.setRetailId(bet.getRetailId());
                         betMap.put(num, load);
                     } else {
                         List<String> ticketId = new ArrayList<>();
                         ticketId.add(bet.getTicketId());
-                        final Load load = Load.builder().number(num).betCount(1).betAmount(winningAmt).betTicketIds(ticketId).build();
+                        final Load load = Load.builder().number(num).betCount(1).betAmount(winningAmt).retailId(bet.getRetailId()).betTicketIds(ticketId).build();
                         betMap.put(num, load);
                     }
                 }

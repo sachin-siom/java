@@ -16,6 +16,7 @@ public class Load implements Comparable<Load>{
   private double betAmount;
   private List<String> betTicketIds;
   private boolean isWinner;
+  private String retailId;
 
   @Override
   public int compareTo(Load o) {
