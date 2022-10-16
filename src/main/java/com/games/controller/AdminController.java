@@ -296,4 +296,5 @@ public class AdminController {
         throws JsonProcessingException {
         return new ResponseEntity(pointPlayService.checkDrawLoad(drawTime),HttpStatus.OK);
     }
+    
 }

@@ -317,6 +317,20 @@ public class PointPlayService {
         return getPlayerResponse(pointsDetails);
     }
 
+    public PointWinnerResponse checkWinnerNew(String ticketId, String retailId) {
+        if (Objects.isNull(ticketId) || ticketId.isEmpty() || Objects.isNull(retailId) || retailId.isEmpty()) {
+            throw new ResourceNotFoundException("ticketId or retailId is empty or null", 30);
+        }
+        PointsDetails pointsDetails = pointPlayRepository.getById(ticketId);
+        if (Objects.isNull(pointsDetails)) {
+            throw new ResourceNotFoundException("ticketId not found in system", 31);
+        }
+        if (!pointsDetails.getRetailId().equals(retailId)) {
+            throw new ResourceNotFoundException("this ticket is not from the the current retailer: "+retailId +" actual retail id: "+pointsDetails.getRetailId(), 34);
+        }
+        return getPlayerResponse(pointsDetails);
+    }
+
     public PointWinnerResponse claimWinner(String ticketId) {
         if (Objects.isNull(ticketId) || ticketId.isEmpty()) {
             throw new ResourceNotFoundException("ticketId is empty or null", 32);

@@ -81,6 +81,14 @@ public class RetailController {
                 .body(winnerWagerResponse);
     }
 
+    @GetMapping(value = "/checkWinnerNew/{ticketId}/{retailId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PointWinnerResponse> checkWinnerNew(@PathVariable("ticketId") String ticketId, @PathVariable("retailId") String retailId) {
+        PointWinnerResponse winnerWagerResponse = pointPlayService.checkWinnerNew(ticketId, retailId);
+        return ResponseEntity
+            .ok()
+            .body(winnerWagerResponse);
+    }
+
     @GetMapping(value = "/claimWinner/{ticketId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PointWinnerResponse> claimWinner(@PathVariable("ticketId") String ticketId) {
         PointWinnerResponse winnerWagerResponse = pointPlayService.claimWinner(ticketId);
