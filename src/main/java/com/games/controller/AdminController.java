@@ -294,7 +294,7 @@ public class AdminController {
     @GetMapping("/load/{drawTime}")
     public ResponseEntity<LoadResponse> loadCurrent(@PathVariable String drawTime)
         throws JsonProcessingException {
-        return new ResponseEntity(pointPlayService.checkDrawLoad(drawTime),HttpStatus.OK);
+        return new ResponseEntity(pointPlayService.checkDrawLoadPast(drawTime),HttpStatus.OK);
     }
 
 }

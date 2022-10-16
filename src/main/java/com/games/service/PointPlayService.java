@@ -150,9 +150,64 @@ public class PointPlayService {
                         final Load load = betMap.get(num);
                         load.setBetCount(load.getBetCount() + 1);
                         load.setBetAmount(load.getBetAmount() + winningAmt);
+                        load.getBetTicketIds().add(bet.getTicketId());
                         betMap.put(num, load);
                     } else {
-                        betMap.put(num, new Load(num, 1, winningAmt));
+                        List<String> ticketId = new ArrayList<>();
+                        ticketId.add(bet.getTicketId());
+                        final Load load = Load.builder().number(num).betCount(1).betAmount(winningAmt).betTicketIds(ticketId).build();
+                        betMap.put(num, load);
+                    }
+                }
+            }
+        }
+        final Set<Load> set = new TreeSet(betMap.values());
+        loadResponse.setLoadData(set);
+        loadResponse.setTotalCollectionAmt(collectionAmt);
+        return loadResponse;
+    }
+
+    public LoadResponse checkDrawLoadPast(String drawTime) throws JsonProcessingException {
+        log.debug("log tim: {}", drawTime);
+        Set<Integer> winnerSet = null;
+        try{
+            final DrawResponse winnerList = getWinnerList(drawTime);
+            if(Objects.nonNull(winnerList)) {
+                winnerSet = new HashSet<>(winnerList.getWinnerNumber());
+            }
+        } catch (Exception e) {
+            log.error("draw not found:{}", e);
+        }
+        double collectionAmt = 0.0;
+        String date = LocalDate.now().toString();
+        List<PointsDetails> allBets = pointPlayRepository.getByDrawTime(drawTime, atStartOfDay(date), atEndOfDay(date));
+        LoadResponse loadResponse = new LoadResponse();
+        Map<Integer, Load> betMap = new TreeMap<>();
+        for (PointsDetails bet : allBets) {
+            ArrayList<Points> betPoints = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
+            for (Points betPoint : betPoints) {
+                double winningAmt = MULTIPLIER * betPoint.getWinningMultiplier();
+                collectionAmt = collectionAmt + (betPoint.getPoints().values().stream().mapToInt(i -> i).sum() * betPoint.getPricePerPoint());
+                final List<Integer> betPointsList = getPoints(betPoint.getPoints());
+                for (Integer num : betPointsList) {
+                    if (betMap.containsKey(num)) {
+                        final Load load = betMap.get(num);
+                        load.setBetCount(load.getBetCount() + 1);
+                        load.setBetAmount(load.getBetAmount() + winningAmt);
+                        load.getBetTicketIds().add(bet.getTicketId());
+                        if(Objects.nonNull(winnerSet) && winnerSet.contains(num)) {
+                            load.setWinner(true);
+                        }
+                        betMap.put(num, load);
+                    } else {
+                        List<String> ticketId = new ArrayList<>();
+                        ticketId.add(bet.getTicketId());
+                        final Load load = Load.builder().number(num).betCount(1).betAmount(winningAmt).betTicketIds(ticketId).build();
+                        if(Objects.nonNull(winnerSet) && winnerSet.contains(num)) {
+                            load.setWinner(true);
+                        }
+                        betMap.put(num, load);
                     }
                 }
             }
