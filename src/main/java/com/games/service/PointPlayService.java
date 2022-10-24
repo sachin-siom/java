@@ -538,6 +538,7 @@ public class PointPlayService {
             reportResponse.setClaimedTime(Objects.isNull(pointsDetail.getIsClaimedTime()) ? "" : pointsDetail.getIsClaimedTime().toString());
             reportResponse.setSetPoints(betPoints(pointsDetail.getPoints()));
             reportResponse.setWonPoints(winningPoints(pointsDetail.getWinningPoints()));
+            reportResponse.setPointDetails(pointsDetail);
             responses.add(reportResponse);
         }
         return responses;
