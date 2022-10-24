@@ -1,5 +1,6 @@
 package com.games.payload;
 
+import com.games.model.PointsDetails;
 import lombok.Data;
 
 import java.util.List;
@@ -13,4 +14,5 @@ public class DrawDetailsReportResponse {
     private int betCount;
     private int winCount;
     private List<Integer> winNumbers;
+    private PointsDetails pointsDetails;
 }

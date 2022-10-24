@@ -511,6 +511,7 @@ public class PointPlayService {
             reportResponse.setWonPoints(winningPoints(pointsDetail.getWinningPoints()));
             reportResponse.setBetCount(betCount(pointsDetail.getPoints()));
             reportResponse.setWinCount(winningCount(pointsDetail.getWinningPoints(), reportResponse));
+            reportResponse.setPointsDetails(pointsDetail);
             responses.add(reportResponse);
         }
         return responses;
