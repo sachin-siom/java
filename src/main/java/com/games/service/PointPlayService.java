@@ -7,6 +7,7 @@ import com.games.exception.ResourceNotFoundException;
 import com.games.model.*;
 import com.games.payload.*;
 import com.games.repository.*;
+import java.util.Map.Entry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -271,8 +272,6 @@ public class PointPlayService {
             return;
         }
         log.info("drawTime :{} winners: {}", drawTime, winners);
-        //Set<WagerNumber> winnerSet = new HashSet(winners.values().stream().flatMap(List::stream).collect(Collectors.toList()));
-        //Map<Integer, Double> winnerNoMap = winnerSet.stream().collect(Collectors.toMap(num -> num.getNum(), num -> num.getWinningPrize()));
         Map<Integer, Double> winnerNoMap = winners.values().stream().flatMap(List::stream).collect(Collectors.toMap(num -> num.getNum(), num -> num.getWinningPrize()));
         for (PointsDetails bet : allBets) {
             ArrayList<Points> points = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
@@ -309,7 +308,7 @@ public class PointPlayService {
         log.info("reset include number :{}", incldNum);
         retailerRepository.includeWiningNumberByAdmin(incldNum, "1");
     }
-
+    
     private List<Integer> getPoints(Map<Integer, Integer> points) {
         List<Integer> generatedPoints = new ArrayList<>();
         for (Integer num : points.keySet()) {
