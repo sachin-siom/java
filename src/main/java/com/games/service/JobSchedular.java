@@ -29,7 +29,7 @@ public class JobSchedular {
             Thread.sleep(1000);
             drawTime = prevDrawTime();
             log.info("Job Started At: {}, drawTime: {}", LocalDateTime.now(), drawTime);
-            gamePlayService.decideWinner(drawTime);
+            gamePlayService.decideWinnerNew(drawTime);
         } catch (Exception e) {
             log.error("issue while running cron scheduleFixedDelayTaskBetWinner: {} ", drawTime, e);
         }

@@ -30,7 +30,7 @@ public class PointsDetails {
     private LocalDateTime isClaimedTime;
     @Column(columnDefinition = "LONGTEXT")
     private String winningPoints;
-    private double totalPoints;
+    private double totalPoints; // ticket price[
     private boolean isPrinted;
     private boolean isDeleted;
     @CreationTimestamp

@@ -2,7 +2,6 @@ package com.games.service;
 
 import com.games.model.BetDetail;
 import com.games.payload.PointDetails;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +18,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 
 @Slf4j
 @Service
@@ -54,19 +54,26 @@ public class PointPlayAlgo1 {
         log.info("1.after include number added, distributeMoney:{}, finalWinnerMap:{}", distributeMoney, finalWinnerMap);
         distributeMoney = distributePrizeRandomly(betMap, distributeMoney, finalWinnerMap);
         log.info("2.after prize distribution, distributeMoney:{}, finalWinnerMap:{}", distributeMoney, finalWinnerMap);
-        addDummyNumber(distributeMoney, prepareAllRangeBetMap, finalWinnerMap);
+        addDummyNumber(distributeMoney, prepareAllRangeBetMap, finalWinnerMap, BUCKETS);
         log.info("3.after dummy number, finalWinnerMap:{}", finalWinnerMap);
-        finalMissedNumberCheck(finalWinnerMap, BUCKETS, betMap);
-        log.info("--------------- winner List num & winner prize ---------------");
+        //finalMissedNumberCheck(finalWinnerMap, BUCKETS, betMap);
+        log.info("=========================================== winner numbers List & prize amount (verify below: dupplicate, no not generated, etc..)============================================");
         printData(finalWinnerMap);
         return finalWinnerMap;
     }
 
     private void addDummyNumber(Double distributeMoney,
         Map<String, List<PointDetails>> prepareAllRangeBetMap,
-        Map<String, List<PointDetails>> finalWinnerMap) {
+        Map<String, List<PointDetails>> finalWinnerMap, List<String> BUCKETS) {
+        for (String highLow : BUCKETS) {
+            if (!finalWinnerMap.containsKey(highLow) || Objects.isNull(finalWinnerMap.get(highLow)) || finalWinnerMap.get(highLow).isEmpty()) {
+                distributeMoney = deductPrizeMoneyToRandomNum(distributeMoney, highLow,
+                    prepareAllRangeBetMap, finalWinnerMap);
+            }
+        }
         for (String key : finalWinnerMap.keySet()) {
             if (finalWinnerMap.containsKey(key) && finalWinnerMap.get(key) != null && finalWinnerMap.get(key).isEmpty()) {
+                log.info("adding dummy number2: {}", key);
                 distributeMoney = deductPrizeMoneyToRandomNum(distributeMoney, key,
                     prepareAllRangeBetMap, finalWinnerMap);
             }
@@ -75,12 +82,19 @@ public class PointPlayAlgo1 {
 
     private Double distributePrizeRandomly(Map<Integer, BetDetail> betMap, Double distributeMoney, Map<String, List<PointDetails>> finalWinnerMap) {
         final List<Integer> betNumbers = new ArrayList<>(betMap.keySet());
+        final Set<Integer> duplicateRangeNumbers = new HashSet<>();
         Collections.shuffle(betNumbers);
         while(distributeMoney > 0) {
             if(betNumbers.isEmpty())
                 break;
             final int indexGenerated = getRandomNum(0, betNumbers.size()-1);
             int selectedWinner = betNumbers.get(indexGenerated);
+            int last2Digit = getLast2Digit(selectedWinner);
+            if(duplicateRangeNumbers.contains(last2Digit)) {
+                betNumbers.remove(indexGenerated);
+                continue;
+            }
+            duplicateRangeNumbers.add(last2Digit);
             int lower = (selectedWinner / 100) * 100;
             int higher = lower + 99;
             if(finalWinnerMap.containsKey(getKey(lower, higher))) {
@@ -96,6 +110,10 @@ public class PointPlayAlgo1 {
             betNumbers.remove(indexGenerated);
         }
         return distributeMoney;
+    }
+
+    private int getLast2Digit(int selectedWinner) {
+        return selectedWinner % 100;
     }
 
     private double addIncludeNumbers(Set<Integer> includeNumber, Map<Integer, BetDetail> betMap, Double moneyNeedsTobeDistributed, Map<String, List<PointDetails>> finalWinnerMap) {
@@ -133,6 +151,7 @@ public class PointPlayAlgo1 {
                 if(betMap.containsKey(num)) {
                     value = betMap.get(num).getWinningAmt();
                 }
+                log.info("adding missed number: {}",num);
                 finalWinnerMap.put(highLow, Arrays.asList(new PointDetails(num, value)));
             }
         }
@@ -162,6 +181,7 @@ public class PointPlayAlgo1 {
         for (int dummy = 0; dummy < dummyWinner.size() && dummyWinnerBet.size() < numbers; dummy++) {
             dummyWinnerBet.add(new PointDetails(dummyWinner.get(dummy), 0.0));
         }
+        log.info("adding dumy winner range:{} number:{}", key, dummyWinnerBet);
         finalWinnerMap.put(key, dummyWinnerBet);
         return moneyNeedsTobeDistributed;
     }
@@ -239,12 +259,15 @@ public class PointPlayAlgo1 {
     }
 
     public static void main(String[] args) {
+        PointPlayAlgo1 algo = new PointPlayAlgo1();
         Map<Integer, BetDetail> betMap = new TreeMap<>();
         for (int i = 0; i < 100; i++) {
-            betMap.put(i, BetDetail.builder().winningAmt(100.0).build());
+            List<Integer> winningMultiplier = Arrays.asList(1,2,3,4,5,6,7,8,9,10);
+            final double winningAmt = winningMultiplier.get(algo.getRandomNum(0, 9)) * 180.0;
+            betMap.put(Integer.parseInt(String.valueOf(i)+"71"), BetDetail.builder().winningAmt(winningAmt).build());
         }
-        betMap.put(7, BetDetail.builder().winningAmt(19.0).build());
-        betMap.put(1, BetDetail.builder().winningAmt(10.0).build());
+        betMap.put(7, BetDetail.builder().winningAmt(19.0).retailId(new HashSet<>(Arrays.asList("1"))).ticketId(new HashSet<>(Arrays.asList("abc"))).build());
+        betMap.put(1, BetDetail.builder().winningAmt(10.0).retailId(new HashSet<>(Arrays.asList("1"))).ticketId(new HashSet<>(Arrays.asList("abc"))).build());
         betMap.put(2, BetDetail.builder().winningAmt(5.0).build());
         betMap.put(573, BetDetail.builder().winningAmt(231.0).build());
 
@@ -285,7 +308,7 @@ public class PointPlayAlgo1 {
         includeNumber.add(14);*/
         SortedSet<Integer> excludeNumber = new TreeSet<>();
         //excludeNumber.addAll(IntStream.rangeClosed(0, 96).boxed().collect(Collectors.toSet()));
-        PointPlayAlgo1 algo = new PointPlayAlgo1();
+
         algo.runNew(betMap, collectionAmt, profitPercentage, includeNumber, excludeNumber);
     }
 }

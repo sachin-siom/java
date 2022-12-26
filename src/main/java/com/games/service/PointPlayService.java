@@ -35,6 +35,9 @@ public class PointPlayService {
     private PointPlayAlgo pointPlayAlgo;
 
     @Autowired
+    private PointPlayAlgo1 pointPlayAlgo1;
+
+    @Autowired
     private SequenceRepository sequenceRepository;
 
     @Autowired
@@ -220,6 +223,96 @@ public class PointPlayService {
         return loadResponse;
     }
 
+    public void decideWinnerNew(String drawTime) throws JsonProcessingException {
+        WinnerPointDetails winnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
+        if(Objects.nonNull(winnerDetails)){
+            log.info("drawn already, draw time: {} bydraw details:{}", drawTime, winnerDetails);
+            return;
+        }
+        String date = LocalDate.now().toString();
+        List<PointsDetails> allBets = pointPlayRepository.getByDrawTime(drawTime, atStartOfDay(date), atEndOfDay(date));
+        double collectionAmt = 0.0;
+        final Retailer adminRetailer = retailerRepository.getById(ADMIN_RETAIL_ID);
+        log.info("admin retailer: {}", adminRetailer);
+        if (Objects.isNull(adminRetailer)) {
+            throw new ResourceNotFoundException("Admin user not found in DB ", 27);
+        }
+        double profitPercentage = adminRetailer.getProfitPercentage();
+        log.info("profit {}% applied & drawTime: {}", profitPercentage, drawTime);
+        Map<Integer, BetDetail> betMap = new HashMap<>();
+        for (PointsDetails bet : allBets) {
+            ArrayList<Points> betPoints = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
+            for (Points betPoint : betPoints) {
+                double winningAmt = MULTIPLIER * betPoint.getWinningMultiplier();
+                collectionAmt = collectionAmt + (betPoint.getPoints().values().stream().mapToInt(i -> i).sum() * betPoint.getPricePerPoint());
+                final List<Integer> betPointsList = getPoints(betPoint.getPoints());
+                for (Integer num : betPointsList) {
+                    if (betMap.containsKey(num)) {
+                        final BetDetail betDetail = betMap.get(num);
+                        betDetail.setWinningAmt(betDetail.getWinningAmt() + winningAmt);
+                        betMap.put(num, betDetail);
+                    } else {
+                        betMap.put(num, BetDetail.builder().winningAmt(winningAmt).build());
+                    }
+                }
+            }
+        }
+        Set<Integer> includeNumber = new HashSet<>(1);
+        try {
+            log.info("betMap: {}, collectionAmt:{}", betMap, collectionAmt);
+            if (Objects.nonNull(adminRetailer.getIncludeNumbers()) && !adminRetailer.getIncludeNumbers().trim().isEmpty()) {
+                includeNumber.addAll(objectMapper.readValue(adminRetailer.getIncludeNumbers(), new TypeReference<ArrayList<Integer>>() {
+                }));
+            }
+            log.info("includeNumber: {}", includeNumber);
+        } catch (Exception e) {
+            log.error("Problem while evaluating include numbers {}", adminRetailer.getIncludeNumbers(), e);
+        }
+
+        SortedSet<Integer> excludeNumber = new TreeSet();
+        Map<String, List<PointDetails>> winners = pointPlayAlgo1.runNew(betMap, collectionAmt, profitPercentage, includeNumber, excludeNumber);
+        if (Objects.isNull(winners) || winners.isEmpty()) {
+            log.error("winner list is empty drawTime: {}", drawTime);
+            return;
+        }
+        log.info("drawTime :{} winners: {}", drawTime, winners);
+        Map<Integer, Double> winnerNoMap = winners.values().stream().flatMap(List::stream).collect(Collectors.toMap(num -> num.getNum(), num -> num.getWinningPrize()));
+        for (PointsDetails bet : allBets) {
+            ArrayList<Points> points = objectMapper.readValue(bet.getPoints(), new TypeReference<ArrayList<Points>>() {
+            });
+            double amt = 0.0;
+            WinningDetails winningDetails = new WinningDetails();
+            for (Points point : points) {
+                double winningAmount = MULTIPLIER * point.getWinningMultiplier();
+                final List<Integer> betPoints = getPoints(point.getPoints());
+                for (Integer num : betPoints) {
+                    if (winnerNoMap.containsKey(num)) {
+                        amt = amt + winningAmount;
+                        if (winningDetails.getWinningNums().get(num) != null) {
+                            winningDetails.getWinningNums().put(num, winningDetails.getWinningNums().get(num) + winningAmount);
+                        } else {
+                            winningDetails.getWinningNums().put(num, winningAmount);
+                        }
+                        log.info("ticket id: {} , num: {} amount: {}, winningAmount:{}", bet.getTicketId(), num, amt, winningAmount);
+                    }
+                }
+            }
+            if (Double.compare(amt, 0.0) > 0 && winningDetails.getWinningNums().size() > 0) {
+                bet.setWinningPoints(objectMapper.writeValueAsString(winningDetails));
+                bet.setIsWinner(1);
+                PointsDetails wagerDetails = pointPlayRepository.save(bet);
+                log.info("winner update in DB:{}", wagerDetails);
+            }
+        }
+        WinnerPointDetails wagerWinnerDetails = new WinnerPointDetails();
+        wagerWinnerDetails.setDrawTime(drawTime);
+        wagerWinnerDetails.setWinnerPoint(objectMapper.writeValueAsString(winnerNoMap));
+        winnerPointRepository.save(wagerWinnerDetails);
+        String incldNum = objectMapper.writeValueAsString(new HashSet(new ArrayList()));
+        log.info("reset include number :{}", incldNum);
+        retailerRepository.includeWiningNumberByAdmin(incldNum, "1");
+    }
     public void decideWinner(String drawTime) throws JsonProcessingException {
         WinnerPointDetails winnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
         if(Objects.nonNull(winnerDetails)){
@@ -308,7 +401,7 @@ public class PointPlayService {
         log.info("reset include number :{}", incldNum);
         retailerRepository.includeWiningNumberByAdmin(incldNum, "1");
     }
-    
+
     private List<Integer> getPoints(Map<Integer, Integer> points) {
         List<Integer> generatedPoints = new ArrayList<>();
         for (Integer num : points.keySet()) {
