@@ -232,7 +232,7 @@ public class PointPlayAlgo1 {
         return String.valueOf(lower) + "-" + String.valueOf(higher);
     }
 
-    private int getRandomNum(int lower, int higher) {
+    public int getRandomNum(int lower, int higher) {
         return (int) ((Math.random() * (higher - lower)) + lower);
     }
 

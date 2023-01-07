@@ -313,6 +313,16 @@ public class PointPlayService {
         log.info("reset include number :{}", incldNum);
         retailerRepository.includeWiningNumberByAdmin(incldNum, "1");
     }
+
+    public void algoDecider(String drawTime) throws JsonProcessingException {
+        int random = pointPlayAlgo1.getRandomNum(0, 9);
+        log.info("random in algoDecider :{}", random);
+        if(random < 3) {
+            decideWinnerNew(drawTime);
+        } else {
+            decideWinner(drawTime);
+        }
+    }
     public void decideWinner(String drawTime) throws JsonProcessingException {
         WinnerPointDetails winnerDetails = winnerPointRepository.findByDrawTimeAndCreationTime(drawTime, LocalDate.now());
         if(Objects.nonNull(winnerDetails)){
