@@ -317,7 +317,7 @@ public class PointPlayService {
     public void algoDecider(String drawTime) throws JsonProcessingException {
         int random = pointPlayAlgo1.getRandomNum(0, 9);
         log.info("random in algoDecider :{}", random);
-        if(random < 3) {
+        if(random > 2) {
             decideWinnerNew(drawTime);
         } else {
             decideWinner(drawTime);
